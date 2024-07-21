@@ -1,0 +1,70 @@
+/* Chatbot.css */
+
+.chatbot-container {
+  margin-left: auto;
+  width: 400px;
+  height: 100%;
+  padding: 16px;
+  background-color: #181818;
+  overflow: hidden; /* Hide the scrollbar */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.chatbot-messages {
+  height: inherit;
+  overflow-y: scroll;
+  scrollbar-width: none; /* For Firefox */
+  -ms-overflow-style: none;  /* For Internet Explorer and Edge */
+  padding: 8px;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.chatbot-container .chatbot-messages::-webkit-scrollbar {
+  display: none;
+}
+
+.message {
+  margin: 8px 0;
+  padding: 8px;
+  border-radius: 4px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+.user-message {
+  background-color: #181818;
+  color: #fff;
+  text-align: right;
+}
+.ai-message {
+  background-color: #181818;
+  color: #fff;
+  text-align: left;
+}
+.chatbot-input-form {
+  display: flex;
+  margin-bottom: 16px;
+}
+.chatbot-input-form input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #303030;
+  border-radius: 4px 0 0 4px;
+  font-size: 16px;
+  background-color: black;
+  color: #fff;
+}
+.chatbot-input-form button {
+  padding: 8px 16px;
+  border: none;
+  background-color: black;
+  color: #fff;
+  border-radius: 0 4px 4px 0;
+  font-size: 16px;
+  cursor: pointer;
+
+}
+.chatbot-input-form button:hover {
+  background-color: #0056b3;
+}
+

@@ -1,10 +1,13 @@
-
+import React from 'react';
+import Chatbot from './components/chatbot';
+import Calendar from './components/calendar';
 
 const App = () => {
   return (
-    <div className="w-full p-6">
-      <p>Hello World!</p>
-    </div>
+    <>
+      <Calendar />
+      <Chatbot />
+    </>
   );
 };
 export default App
