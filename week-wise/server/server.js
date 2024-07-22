@@ -44,6 +44,53 @@ app.post("/chatbot", async (req, res) => {
   }
 });
 
+
+// ChatGPT endpoint
+app.post("/schedule", async (req, res) => {
+  const { message, currentSchedule } = req.body;
+
+  // Construct the prompt
+  const prompt = `
+  You are an assistant that helps manage a user's calendar. Based on the user's current schedule, find an appropriate time block for the task they mention. 
+  Return the time block in the following JSON format: { "task": "task name", "start": "start time", "end": "end time" }.
+  Then provide a reply to the user about the scheduled task.
+
+  Current Schedule: ${JSON.stringify(currentSchedule)}
+  User's Task: ${message}
+  `;
+
+  // console.log("prompt", prompt);
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{role: 'user', content: prompt}],
+      max_tokens: 150,
+      temperature: 0.7,
+    });
+
+    // Split the response into the time block and the assistant's reply
+    const responseText = response.choices[0].message.content.trim();
+    console.log("responseText", responseText);
+    const splitIndex = responseText.indexOf('}') + 1;
+
+    let timeBlock;
+    let assistantReply;
+    try {
+      timeBlock = JSON.parse(responseText.substring(0, splitIndex));
+      assistantReply = responseText.substring(splitIndex).trim();
+    } catch (error) {
+      return res.status(500).json({ error: "Invalid JSON response from GPT-3" });
+    }
+
+    res.json({ timeBlock, reply: assistantReply });
+  } catch (error) {
+    console.error('Error communicating with the API:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Start the Express server
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

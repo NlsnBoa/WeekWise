@@ -1,13 +1,9 @@
 import React from 'react';
-import Chatbot from './components/chatbot';
-import Calendar from './components/calendar';
+import Homepage from './components/homepage';
 
 const App = () => {
   return (
-    <>
-      <Calendar />
-      <Chatbot />
-    </>
+    <Homepage></Homepage>
   );
 };
 export default App
