@@ -91,6 +91,61 @@ app.post("/schedule", async (req, res) => {
 });
 
 
+
+app.post("/updateSchedule", async (req, res) => {
+  const { message, currentSchedule } = req.body;
+
+  // Construct the prompt
+  const prompt = `
+    You are an assistant that helps manage a user's calendar. Based on the user's current schedule, perform the task they mention, which could be adding a new task, moving an existing task, or deleting a task. 
+    After making the changes, return the updated schedule in the following JSON format by itself: 
+    {
+      "user": "user name",
+      "blocks": [
+        { "task": "task name", "start": "start time", "end": "end time" },
+        ...
+      ]
+    }
+    followed by a reply to the user about the changes made to their schedule. do not include anything like "message to User" or "reply to User" in the response.
+
+    Current Schedule: ${JSON.stringify(currentSchedule)}
+    User's Request: ${message}
+  `;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+      temperature: 0.7,
+    });
+
+    const responseText = response.choices[0].message.content.trim();
+    console.log("responseText", responseText);
+
+    // Extract the JSON object part from the response
+    const jsonResponseMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonResponseMatch) {
+      return res.status(500).json({ error: "Invalid JSON response from GPT-3" });
+    }
+
+    const jsonResponse = jsonResponseMatch[0];
+    let updatedSchedule;
+    try {
+      updatedSchedule = JSON.parse(jsonResponse);
+    } catch (error) {
+      return res.status(500).json({ error: "Invalid JSON response from GPT-3" });
+    }
+
+    const assistantReply = responseText.replace(jsonResponse, '').trim();
+
+    res.json({ updatedSchedule, reply: assistantReply });
+  } catch (error) {
+    console.error('Error communicating with the API:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Start the Express server
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

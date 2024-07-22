@@ -34,20 +34,17 @@ const Chatbot = ({ currentSchedule, setCurrentSchedule } : ChatbotProps ) => {
     console.log("input", input);
     try {
       // Send the user message to the server
-      const response = await axios.post('http://localhost:5050/schedule', {
+      const response = await axios.post('http://localhost:5050/updateSchedule', {
         message: input,
         currentSchedule,
       });
   
-      console.log("TimeBlock", response.data.timeBlock);
+      console.log("updatedSchedule", response.data.updatedSchedule);
       console.log("reply", response.data.reply);
 
-      const newTimeBlock: TimeBlock = response.data.timeBlock;
+      const updatedSchedule: Schedule = response.data.updatedSchedule;
       // Update the schedule with the new time block
-      setCurrentSchedule((prevSchedule: Schedule) => ({
-        ...prevSchedule,
-        blocks: [...prevSchedule.blocks, newTimeBlock]
-      }));
+      setCurrentSchedule(updatedSchedule);
 
       console.log("currentSchedule", currentSchedule);
       
