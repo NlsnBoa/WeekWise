@@ -2,59 +2,114 @@
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid'
-import { useEffect, useRef } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { Schedule, TimeBlock } from './homepage';
 
+// These need to exist for tailwind to add the styles to the build
+// They are not used in the code but are required for the styles to be added
+const TimeBlockStyles = [ "relative mt-px flex sm:col-start-1"
+                          ,"relative mt-px flex sm:col-start-2" 
+                          ,"relative mt-px flex sm:col-start-3"
+                          ,"relative mt-px flex sm:col-start-4"
+                          ,"relative mt-px flex sm:col-start-5"
+                          ,"relative mt-px flex sm:col-start-6"
+                          ,"relative mt-px flex sm:col-start-7" 
+                          ,"col-start-1",
+                          "col-start-2",
+                          "col-start-3",
+                          "col-start-4",
+                          "col-start-5",
+                          "col-start-6",
+                          "col-start-7",
+                          "col-start-8",  
+                          "col-end-1",  
+                          "col-end-2",
+                          "col-end-3",
+                          "col-end-4",
+                          "col-end-5",
+                          "col-end-6",
+                          "col-end-7",
+                          "col-end-8",
+                        ]
 
 interface CalendarProps {
   currentSchedule: Schedule;
   setCurrentSchedule: React.Dispatch<React.SetStateAction<Schedule>>;
 }
 
+const getCurrentTime = () => {
+  const now = new Date();
+  const hours = now.getHours(); // 0-23
+  const current_time_in_seconds = (now.getMinutes() * 60) + (hours * 60 * 60); // 0-86399
+  return current_time_in_seconds;
+}
+
+const getWeekDates = () => {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Set to Monday
+  const weekDates = [];
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + i);
+    weekDates.push(date);
+  }
+  return weekDates;
+};
+
+const getDayIndex = () => {
+  const now = new Date();
+  const weekDates = getWeekDates();
+  const MondayDate = weekDates[0].getDate();
+  const index = now.getDate() - MondayDate + 1
+  return index;
+}
+
+
 const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
-  const container = useRef(null)
-  const containerNav = useRef(null)
-  const containerOffset = useRef(null)
+  const container = useRef<HTMLDivElement>(null)
+  const containerNav = useRef<HTMLDivElement>(null)
+  const containerOffset = useRef<HTMLDivElement>(null)
+  const [currentTime, setCurrentTime] = useState<number>(getCurrentTime());
+  const [currentDayIndex, setCurrentDayIndex] = useState<number>(getDayIndex());
 
   useEffect(() => {
     // Set the container scroll position based on the current time.
     const currentMinute = new Date().getHours() * 60
-    container.current.scrollTop =
-      ((container.current.scrollHeight - containerNav.current.offsetHeight - containerOffset.current.offsetHeight) *
+    // if (container && container.current && container.current.scrollTop && containerNav && containerNav.current && containerOffset && containerOffset.current && containerOffset.current.offsetHeight) {
+      container.current!.scrollTop =
+      ((container.current!.scrollHeight - containerNav.current!.offsetHeight - containerOffset.current!.offsetHeight) *
         currentMinute) /
       1440
+    // }
+
   }, [])
 
-  const getColumnIndex = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const day = date.getDay(); // Sunday = 0, Monday = 1, ..., Saturday = 6
-    return day === 0 ? 7 : day; // Convert Sunday (0) to 7 for the last column
-  };
 
-  const getWeekDates = () => {
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Set to Monday
-    const weekDates = [];
-    for (let i = 0; i < 7; i++) {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + i);
-      weekDates.push(date);
-    }
-    return weekDates;
-  };
+  useEffect(() => {
+    const updateCurrentTime = () => {
+      let time = getCurrentTime();
+      setCurrentTime(time);
+    };
+
+    updateCurrentTime();
+    const intervalId = setInterval(updateCurrentTime, 1000); // Update every second
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, []);
 
   const weekDates = getWeekDates();
 
   return (
     <div className="flex h-full flex-col">
-      {/* <header className="flex flex-none items-center justify-between border-b border-gray-200 px-6 py-4">
-        <h1 className="text-base font-semibold leading-6 text-white">
-          <time dateTime="2022-01">January 2022</time>
-        </h1>
+      <header className="flex flex-none items-center justify-between px-6 py-4">
+        <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+          Week Wise
+        </h2>
         <div className="flex items-center">
-          <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
+          {/* <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
             <button
               type="button"
               className="flex h-9 w-12 items-center justify-center rounded-l-md border-y border-l border-gray-300 pr-1 text-gray-400 hover:text-gray-500 focus:relative md:w-9 md:pr-0 md:hover:bg-gray-50"
@@ -64,7 +119,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             </button>
             <button
               type="button"
-              className="hidden border-y border-gray-300 px-3.5 text-sm font-semibold text-white hover:bg-gray-50 focus:relative md:block"
+              className="hidden border-y border-gray-300 px-3.5 text-sm font-semibold text-gray-900 hover:bg-gray-50 focus:relative md:block"
             >
               Today
             </button>
@@ -76,12 +131,12 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
               <span className="sr-only">Next week</span>
               <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
             </button>
-          </div>
+          </div> */}
           <div className="hidden md:ml-4 md:flex md:items-center">
             <Menu as="div" className="relative">
               <MenuButton
                 type="button"
-                className="flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
+                className="flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
               >
                 Week view
                 <ChevronDownIcon className="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" />
@@ -95,7 +150,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   <MenuItem>
                     <a
                       href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                     >
                       Day view
                     </a>
@@ -103,7 +158,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   <MenuItem>
                     <a
                       href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                     >
                       Week view
                     </a>
@@ -111,7 +166,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   <MenuItem>
                     <a
                       href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                     >
                       Month view
                     </a>
@@ -119,7 +174,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   <MenuItem>
                     <a
                       href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                      className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                     >
                       Year view
                     </a>
@@ -130,7 +185,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             <div className="ml-6 h-6 w-px bg-gray-300" />
             <button
               type="button"
-              className="ml-6 rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              className="ml-6 rounded-md border-[1px] border-[#303030] bg-black px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black"
             >
               Add event
             </button>
@@ -149,7 +204,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Create event
                   </a>
@@ -159,7 +214,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Go to today
                   </a>
@@ -169,7 +224,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Day view
                   </a>
@@ -177,7 +232,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Week view
                   </a>
@@ -185,7 +240,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Month view
                   </a>
@@ -193,7 +248,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 <MenuItem>
                   <a
                     href="#"
-                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-white"
+                    className="block px-4 py-2 text-sm text-gray-700 data-[focus]:bg-gray-100 data-[focus]:text-gray-900"
                   >
                     Year view
                   </a>
@@ -202,20 +257,20 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             </MenuItems>
           </Menu>
         </div>
-      </header> */}
+      </header>
       <div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-neutral-900 rounded-2xl border-8 border-black">
         <div style={{ width: '165%' }} className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full">
           <div
             ref={containerNav}
             className="sticky top-0 z-30 flex-none bg-black border-b-[1px] border-white ring-white ring-opacity-5 sm:pr-8"
           >
-            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-500 border-r border-gray-100 text-sm leading-6 text-white sm:grid">
+            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-500 border-r border-gray-500 text-sm leading-6 text-white sm:grid">
               <div className="col-end-1 w-14" />
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
                 <div key={index} className="flex items-center justify-center py-3">
-                  <span>
+                  <span className={` ${currentDayIndex - 1 == index ? 'flex items-baseline text-blue-500' : ''}`}>
                     {day}{' '}
-                    <span className="items-center justify-center font-semibold text-white">
+                    <span className={`${currentDayIndex - 1 == index ? 'ml-1.5 flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 font-semibold text-white' : 'items-center justify-center font-semibold text-white '}`}>
                       {weekDates[index].getDate()}
                     </span>
                   </span>
@@ -233,14 +288,14 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
               >
                 <div ref={containerOffset} className="row-end-1 h-7"></div>
                 {[...Array(24).keys()].map((hour) => (
-                  <>
-                    <div key={hour}>
+                  <Fragment key={`frag-${hour}`}>
+                    <div key={`time-${hour}`}>
                       <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
                         {hour % 12 === 0 ? 12 : hour % 12}{hour < 12 ? 'AM' : 'PM'}
                       </div>
                     </div>
                     <div key={`spacer-${hour}`} />
-                  </>
+                  </Fragment>
                 ))}
               </div>
 
@@ -251,7 +306,6 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 ))}
                 <div className="col-start-8 row-span-full w-8" />
               </div>
-
 
               {/* Events */}
               {/* <ol
@@ -304,10 +358,28 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 </li>
               </ol> */}
 
+
               <ol
                 className="col-start-1 col-end-2 row-start-1 grid grid-cols-1 sm:grid-cols-7 sm:pr-8"
                 style={{ gridTemplateRows: '1.75rem repeat(288, minmax(0, 1fr)) auto' }}
               >
+
+                <div 
+                  className="relative mt-px flex col-start-1 col-end-8 w-full border-t-2 border-red-500 opacity-50"
+                  style={{ top: `${((1.75/(15 * 60)) * currentTime )+ 1.75}rem` }}
+                  // style ={{top: `${1.70 * 2.45}rem`}}
+                > 
+                </div>
+
+                <div className={`relative mt-px flex col-start-${currentDayIndex} w-full  border-t-2 border-red-500`} 
+                  style={{ top: `${((1.75/(15 * 60)) * currentTime )}rem` }}
+                  // style ={{top: "1.75rem"}}
+                >
+                  <div className="absolute top-[-1px] left-0 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full">
+                  </div>
+                </div>
+          
+
                 {currentSchedule.blocks.map((block, index) => {
                   const start = new Date(block.start);
                   const end = new Date(block.end);
@@ -322,7 +394,6 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   const duration = (endTime - startTime) * 60 * 0.2;
                   const MondayDate = weekDates[0].getDate();
                   const day = start.getDate() - MondayDate + 1;
-                  const columnIndex = day === 0 ? 7 : day; // Ensure Sunday is last
 
                   if (index === currentSchedule.blocks.length - 1) {
                     console.log('block', block);
@@ -335,11 +406,10 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                     console.log('startRow', startRow);
                     console.log('duration', duration);
                     console.log('day', day);
-                    console.log('columnIndex', columnIndex);
                   }
 
                   return (
-                    <li key={`${block.task}-${index}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
+                    <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
                       <a
                         href="#"
                         className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
@@ -365,3 +435,5 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
 
 
 export default Calendar
+
+
