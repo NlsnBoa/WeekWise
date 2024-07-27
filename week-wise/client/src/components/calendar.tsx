@@ -4,6 +4,16 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid'
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { Schedule, TimeBlock } from './homepage';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+
+
 
 // These need to exist for tailwind to add the styles to the build
 // They are not used in the code but are required for the styles to be added
@@ -106,7 +116,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
     <div className="flex h-full flex-col">
       <header className="flex flex-none items-center justify-between px-6 py-4">
         <h2 className="text-2xl font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
-          Week Wise
+          {/* Week Wise */}
         </h2>
         <div className="flex items-center">
           {/* <div className="relative flex items-center rounded-md bg-white shadow-sm md:items-stretch">
@@ -133,6 +143,8 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             </button>
           </div> */}
           <div className="hidden md:ml-4 md:flex md:items-center">
+            
+            <div className="mx-6 h-6 w-px bg-gray-300" />
             <Menu as="div" className="relative">
               <MenuButton
                 type="button"
@@ -189,6 +201,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             >
               Add event
             </button>
+            
           </div>
           <Menu as="div" className="relative ml-6 md:hidden">
             <MenuButton className="-mx-2 flex items-center rounded-full border border-transparent p-2 text-gray-400 hover:text-gray-500">
@@ -410,7 +423,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
 
                   return (
                     <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
-                      <a
+                      {/* <a
                         href="#"
                         className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
                       >
@@ -418,7 +431,29 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                         <p className="text-blue-200 group-hover:text-blue-100">
                           <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
                         </p>
-                      </a>
+                      </a> */}
+                      <Sheet>
+                        <SheetTrigger>
+                            <a
+                            href="#"
+                            className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
+                          >
+                            <p className="order-1 font-semibold text-white">{block.task}</p>
+                            <p className="text-blue-200 group-hover:text-blue-100">
+                              <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                            </p>
+                          </a> 
+                        </SheetTrigger>
+                        <SheetContent>
+                          <SheetHeader>
+                            <SheetTitle>Are you absolutely sure?</SheetTitle>
+                            <SheetDescription>
+                              This action cannot be undone. This will permanently delete your account
+                              and remove your data from our servers.
+                            </SheetDescription>
+                          </SheetHeader>
+                        </SheetContent>
+                      </Sheet>
                     </li>
                   );
                 })}

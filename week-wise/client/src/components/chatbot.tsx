@@ -3,6 +3,8 @@ import axios from 'axios';
 import '../Chatbot.css';
 import WelcomeCard from './welcomeCard'
 import { Schedule, TimeBlock } from './homepage';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 interface Message {
   text: string;
@@ -80,7 +82,7 @@ const Chatbot = ({ currentSchedule, setCurrentSchedule } : ChatbotProps ) => {
         ))}
       </div>
       {loading && <div className='text-white'>Loading...</div>}
-      <form className="chatbot-input-form" onSubmit={handleSubmit}>
+      {/* <form className="chatbot-input-form" onSubmit={handleSubmit}>
         <input
           type="text"
           value={input}
@@ -88,6 +90,17 @@ const Chatbot = ({ currentSchedule, setCurrentSchedule } : ChatbotProps ) => {
           placeholder="Ask your assistant..."
         />
         <button type="submit" disabled={loading}>Send</button>
+      </form> */}
+      <form onSubmit={handleSubmit}>
+        <div className="flex w-full dark:text-white max-w-sm items-center space-x-2">
+          <Input 
+            type="text"
+            value={input}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
+            placeholder="Ask your assistant..."
+          />
+          <Button type="submit" disabled={loading}>Send</Button>
+        </div>
       </form>
     </div>
   );

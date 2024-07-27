@@ -1,6 +1,12 @@
 import React, { useState } from 'react'
 import Calendar from './calendar'
 import Chatbot from './chatbot'
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+import Nav from './nav'
 
 export interface TimeBlock {
   task: string;
@@ -59,14 +65,36 @@ const homepage = () => {
 
   return (
     <>
-      <div className="flex flex-row h-screen">
+      {/* <div className="flex flex-row h-screen">
         <div className="flex-grow lg:flex-grow-4 p-4 overflow-auto scrollbar">
           <Calendar currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
         </div>
         <div className="flex-grow-5 lg:flex-grow-1 p-4 overflow-auto scrollbar">
           <Chatbot currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
         </div>
-      </div>
+      </div> */}
+
+      <ResizablePanelGroup direction="vertical">
+        <ResizablePanel defaultSize={6} minSize={6} maxSize={6}>
+          <Nav />
+        </ResizablePanel>
+        {/* <ResizableHandle /> */}
+        <ResizablePanel defaultSize={94}>
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel defaultSize={75} minSize={75} maxSize={75}>
+              <div className="h-full px-6 pb-6">
+                <Calendar currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
+              </div>
+            </ResizablePanel>
+            {/* <ResizableHandle /> */}
+            <ResizablePanel defaultSize={25} minSize={25} maxSize={25}>
+              <div className="flex h-full items-center justify-center p-6">
+                <Chatbot currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
+              </div>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </>
   )
 }
