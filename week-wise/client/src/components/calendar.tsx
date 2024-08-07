@@ -13,6 +13,24 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet"
 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
+
+import { Button } from "@/components/ui/button"
+
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable"
+
+import clock from '../assets/clock.svg'
+import expand from '../assets/expand.svg'
+
+
 
 
 // These need to exist for tailwind to add the styles to the build
@@ -432,28 +450,79 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                           <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
                         </p>
                       </a> */}
-                      <Sheet>
-                        <SheetTrigger>
-                            <a
+                      <Popover>
+                        <PopoverTrigger>
+                          <a
                             href="#"
-                            className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
+                            className="group absolute inset-1 flex flex-col justify-start items-start overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
                           >
                             <p className="order-1 font-semibold text-white">{block.task}</p>
                             <p className="text-blue-200 group-hover:text-blue-100">
                               <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
                             </p>
                           </a> 
-                        </SheetTrigger>
-                        <SheetContent>
-                          <SheetHeader>
-                            <SheetTitle>Are you absolutely sure?</SheetTitle>
-                            <SheetDescription>
-                              This action cannot be undone. This will permanently delete your account
-                              and remove your data from our servers.
-                            </SheetDescription>
-                          </SheetHeader>
-                        </SheetContent>
-                      </Sheet>
+                        </PopoverTrigger>
+                        <PopoverContent className='h-48' >
+                          <ResizablePanelGroup direction="vertical">
+                            <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
+                              <ResizablePanelGroup direction="horizontal">
+                                <ResizablePanel defaultSize={84} maxSize={84} minSize={84}>
+                                <div className='flex flex-col '>
+                                  <p>{block.task}</p>
+                                  <div className='flex flex-row mt-2'>
+                                    <img src={clock} alt="clock" className='h-5' />
+                                    <div className='flex flex-col ml-2'>
+                                      <p>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                      <p>{new Date(block.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                    </div>
+                                  </div>
+                                </div>
+                                </ResizablePanel>
+                                {/* <ResizableHandle  /> */}
+                                <ResizablePanel>
+                                  <Sheet>
+                                    <SheetTrigger>
+                                      <Button variant="ghost" size="icon">
+                                        <img src={expand} alt="expand" className='h-5' />
+                                      </Button>
+                                    </SheetTrigger>
+                                    <SheetContent>
+                                      <SheetHeader>
+                                        <SheetTitle>Are you absolutely sure?</SheetTitle>
+                                        <SheetDescription>
+                                          This action cannot be undone. This will permanently delete your account
+                                          and remove your data from our servers.
+                                        </SheetDescription>
+                                      </SheetHeader>
+                                    </SheetContent>
+                                  </Sheet>
+                                </ResizablePanel>
+                              </ResizablePanelGroup>       
+                            </ResizablePanel>
+                            <ResizableHandle />
+                            <ResizablePanel>
+                              <Sheet>
+                                <SheetTrigger>
+                                  <div>
+                                    <Button variant="secondary"  className='mt-3 h-6 mr-6'>Edit</Button>
+                                    <Button variant="destructive"  className='mt-3 h-6'>Delete</Button>
+                                  </div>
+                                </SheetTrigger>
+                                <SheetContent className=''>
+                                  <SheetHeader>
+                                    <SheetTitle>Are you absolutely sure?</SheetTitle>
+                                    <SheetDescription>
+                                      This action cannot be undone. This will permanently delete your account
+                                      and remove your data from our servers.
+                                    </SheetDescription>
+                                  </SheetHeader>
+                                </SheetContent>
+                              </Sheet>
+                            </ResizablePanel>
+                          </ResizablePanelGroup>       
+                          
+                        </PopoverContent>
+                      </Popover>
                     </li>
                   );
                 })}

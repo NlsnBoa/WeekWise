@@ -5,6 +5,7 @@ import WelcomeCard from './welcomeCard'
 import { Schedule, TimeBlock } from './homepage';
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Loader2 } from 'lucide-react';
 
 interface Message {
   text: string;
@@ -99,7 +100,14 @@ const Chatbot = ({ currentSchedule, setCurrentSchedule } : ChatbotProps ) => {
             onChange={(e: ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
             placeholder="Ask your assistant..."
           />
-          <Button type="submit" disabled={loading}>Send</Button>
+          { loading ?  
+            <Button type="submit" disabled>
+              <Loader2 className="h-4 w-4 animate-spin" />
+             </Button> 
+             :  
+             <Button type="submit">Send</Button>
+          }
+         
         </div>
       </form>
     </div>

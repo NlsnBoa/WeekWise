@@ -1,6 +1,7 @@
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { ModeToggle } from './mode-toggle'
+import Logo from '../assets/WeekWiseLogoBetter3.svg';
 
 export default function Example() {
   return (
@@ -8,13 +9,16 @@ export default function Example() {
       <div className="mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div className="flex-shrink-0 ">
               <img
-                alt="Your Company"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=500"
-                className="h-8 w-auto"
+                alt="Week Wise Logo"
+                src={Logo}
+                className="h-8 w-auto "
               />
             </div>
+            <h2 className="text-2xl ml-4 font-bold leading-7 text-white sm:truncate sm:text-3xl sm:tracking-tight">
+              Week Wise
+            </h2>
             <div className="hidden sm:ml-6 sm:block">
               <div className="flex space-x-4">
                 {/* Current: "bg-gray-900 text-white", Default: "text-gray-300 hover:bg-gray-700 hover:text-white" */}

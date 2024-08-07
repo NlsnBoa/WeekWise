@@ -1,6 +1,10 @@
 import React, { useState } from 'react'
 import Calendar from './calendar'
-import Chatbot from './chatbot'
+// import Chatbot from './chatbot'
+import TodoList from './todo-list'
+// import DraggableList from './ui/draggable-list'
+
+
 import {
   ResizableHandle,
   ResizablePanel,
@@ -24,38 +28,38 @@ const initialSchedule: Schedule = {
   blocks: [
     {
       task: "Morning Meeting",
-      start: "2024-10-22T02:00:00-12:00",
-      end: "2024-10-22T03:00:00-12:00"
+      start: "2024-10-05T02:00:00-12:00",
+      end: "2024-10-05T03:00:00-12:00"
     },
     {
       task: "Project Discussion",
-      start: "2024-10-23T04:00:00-13:00",
-      end: "2024-10-23T05:00:00-13:00"
+      start: "2024-10-06T04:00:00-13:00",
+      end: "2024-10-06T05:00:00-13:00"
     },
     {
       task: "Code Review",
-      start: "2024-10-24T07:00:00-07:00",
-      end: "2024-10-24T08:00:00-07:00"
+      start: "2024-10-07T07:00:00-07:00",
+      end: "2024-10-07T08:00:00-07:00"
     },
     {
       task: "Team Sync",
-      start: "2024-10-25T09:00:00-07:00",
-      end: "2024-10-25T10:00:00-07:00"
+      start: "2024-10-08T09:00:00-07:00",
+      end: "2024-10-08T10:00:00-07:00"
     },
     {
       task: "Weekly Planning",
-      start: "2024-10-26T03:00:00-12:00",
-      end: "2024-10-26T04:00:00-12:00"
+      start: "2024-10-09T03:00:00-12:00",
+      end: "2024-10-09T04:00:00-12:00"
     },
     {
       task: "Gym Session",
-      start: "2024-10-27T03:00:00-22:00",
-      end: "2024-10-27T04:00:00-22:00"
+      start: "2024-10-10T03:00:00-22:00",
+      end: "2024-10-10T04:00:00-22:00"
     },
     {
       task: "Church",
-      start: "2024-10-28T03:00:00-11:00",
-      end: "2024-10-28T04:00:00-11:00"
+      start: "2024-10-11T03:00:00-11:00",
+      end: "2024-10-11T04:00:00-11:00"
     },
   ]
 };
@@ -89,7 +93,10 @@ const homepage = () => {
             {/* <ResizableHandle /> */}
             <ResizablePanel defaultSize={25} minSize={25} maxSize={25}>
               <div className="flex h-full items-center justify-center p-6">
-                <Chatbot currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
+                {/* <div className="min-h-screen flex items-center justify-center bg-gray-100"> */}
+                  <TodoList currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
+                  {/* <TodoList /> */}
+                {/* </div> */}
               </div>
             </ResizablePanel>
           </ResizablePanelGroup>
