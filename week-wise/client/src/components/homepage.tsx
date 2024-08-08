@@ -3,6 +3,7 @@ import Calendar from './calendar'
 // import Chatbot from './chatbot'
 import TodoList from './todo-list'
 // import DraggableList from './ui/draggable-list'
+import DragCalendar from './ui/draggable-calendar'
 
 
 import {
@@ -21,7 +22,7 @@ export interface TimeBlock {
 export interface Schedule {
   user: string;
   blocks: TimeBlock[];
-}
+}   
 
 const initialSchedule: Schedule = {
   user: "user1",
@@ -88,7 +89,10 @@ const homepage = () => {
             <ResizablePanel defaultSize={75} minSize={75} maxSize={75}>
               <div className="h-full px-6 pb-6">
                 <Calendar currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
+                {/* <DragCalendar /> */}
               </div>
+                  {/* <div className="App min-h-screen bg-gray-100 flex items-center justify-center"> */}
+                {/* </div> */}
             </ResizablePanel>
             {/* <ResizableHandle /> */}
             <ResizablePanel defaultSize={25} minSize={25} maxSize={25}>

@@ -289,7 +289,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
           </Menu>
         </div>
       </header>
-      <div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-neutral-900 rounded-2xl border-8 border-black">
+      <div ref={container} className="isolate flex flex-auto flex-col overflow-auto bg-black rounded-2xl border-8 border-black">
         <div style={{ width: '165%' }} className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full">
           <div
             ref={containerNav}
@@ -310,7 +310,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
             </div>
           </div>
           <div className="flex flex-auto">
-            <div className="sticky left-0 z-10 w-14 flex-none bg-black ring-1 ring-gray-500" />
+            <div className="sticky left-0 z-10 w-14 flex-none bg-black ring-1 ring-black" />
             <div className="grid flex-auto grid-cols-1 grid-rows-1">
               {/* Horizontal lines */}
               <div
@@ -331,7 +331,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
               </div>
 
               {/* Vertical lines */}
-              <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-400 sm:grid sm:grid-cols-7">
+              <div className="col-start-1 col-end-2 row-start-1 hidden grid-cols-7 grid-rows-1 divide-x divide-gray-500 sm:grid sm:grid-cols-7">
                 {[...Array(7).keys()].map((day) => (
                   <div key={day} className={`col-start-${day + 1} row-span-full`} />
                 ))}
@@ -441,88 +441,93 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
 
                   return (
                     <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
-                      {/* <a
-                        href="#"
-                        className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
-                      >
-                        <p className="order-1 font-semibold text-white">{block.task}</p>
-                        <p className="text-blue-200 group-hover:text-blue-100">
-                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
-                        </p>
-                      </a> */}
-                      <Popover>
-                        <PopoverTrigger>
-                          <a
-                            href="#"
-                            className="group absolute inset-1 flex flex-col justify-start items-start overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
-                          >
-                            <p className="order-1 font-semibold text-white">{block.task}</p>
-                            <p className="text-blue-200 group-hover:text-blue-100">
-                              <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
-                            </p>
-                          </a> 
-                        </PopoverTrigger>
-                        <PopoverContent className='h-48' >
-                          <ResizablePanelGroup direction="vertical">
-                            <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
-                              <ResizablePanelGroup direction="horizontal">
-                                <ResizablePanel defaultSize={84} maxSize={84} minSize={84}>
-                                <div className='flex flex-col '>
-                                  <p>{block.task}</p>
-                                  <div className='flex flex-row mt-2'>
-                                    <img src={clock} alt="clock" className='h-5' />
-                                    <div className='flex flex-col ml-2'>
-                                      <p>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                      <p>{new Date(block.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        {/* <a
+                          href="#"
+                          className="group absolute inset-1 flex flex-col overflow-y-auto rounded-lg bg-blue-800 p-2 text-xs leading-5 hover:bg-blue-900"
+                        >
+                          <p className="order-1 font-semibold text-white">{block.task}</p>
+                          <p className="text-blue-200 group-hover:text-blue-100">
+                            <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                          </p>
+                        </a> */}
+                        <Popover>
+                          <PopoverTrigger>
+                            <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'>
+                              <div className='h-full bg-blue-600 w-3'></div>
+                              <a
+                                href="#"
+                                className="flex flex-col p-2 justify-start items-start "
+                              >   
+                                <p className="font-semibold text-white">{block.task}</p>
+                                <p className="text-blue-200 group-hover:text-blue-100">
+                                  <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                  <span>-</span> 
+                                  <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                </p>
+                              </a> 
+                            </div>
+                          </PopoverTrigger>
+                          <PopoverContent className='h-48' >
+                            <ResizablePanelGroup direction="vertical">
+                              <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
+                                <ResizablePanelGroup direction="horizontal">
+                                  <ResizablePanel defaultSize={84} maxSize={84} minSize={84}>
+                                  <div className='flex flex-col '>
+                                    <p>{block.task}</p>
+                                    <div className='flex flex-row mt-2'>
+                                      <img src={clock} alt="clock" className='h-5' />
+                                      <div className='flex flex-col ml-2'>
+                                        <p>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p>{new Date(block.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                </ResizablePanel>
-                                {/* <ResizableHandle  /> */}
-                                <ResizablePanel>
-                                  <Sheet>
-                                    <SheetTrigger>
-                                      <Button variant="ghost" size="icon">
-                                        <img src={expand} alt="expand" className='h-5' />
-                                      </Button>
-                                    </SheetTrigger>
-                                    <SheetContent>
-                                      <SheetHeader>
-                                        <SheetTitle>Are you absolutely sure?</SheetTitle>
-                                        <SheetDescription>
-                                          This action cannot be undone. This will permanently delete your account
-                                          and remove your data from our servers.
-                                        </SheetDescription>
-                                      </SheetHeader>
-                                    </SheetContent>
-                                  </Sheet>
-                                </ResizablePanel>
-                              </ResizablePanelGroup>       
-                            </ResizablePanel>
-                            <ResizableHandle />
-                            <ResizablePanel>
-                              <Sheet>
-                                <SheetTrigger>
-                                  <div>
-                                    <Button variant="secondary"  className='mt-3 h-6 mr-6'>Edit</Button>
-                                    <Button variant="destructive"  className='mt-3 h-6'>Delete</Button>
-                                  </div>
-                                </SheetTrigger>
-                                <SheetContent className=''>
-                                  <SheetHeader>
-                                    <SheetTitle>Are you absolutely sure?</SheetTitle>
-                                    <SheetDescription>
-                                      This action cannot be undone. This will permanently delete your account
-                                      and remove your data from our servers.
-                                    </SheetDescription>
-                                  </SheetHeader>
-                                </SheetContent>
-                              </Sheet>
-                            </ResizablePanel>
-                          </ResizablePanelGroup>       
-                          
-                        </PopoverContent>
-                      </Popover>
+                                  </ResizablePanel>
+                                  {/* <ResizableHandle  /> */}
+                                  <ResizablePanel>
+                                    <Sheet>
+                                      <SheetTrigger>
+                                        <Button variant="ghost" size="icon">
+                                          <img src={expand} alt="expand" className='h-5' />
+                                        </Button>
+                                      </SheetTrigger>
+                                      <SheetContent>
+                                        <SheetHeader>
+                                          <SheetTitle>Are you absolutely sure?</SheetTitle>
+                                          <SheetDescription>
+                                            This action cannot be undone. This will permanently delete your account
+                                            and remove your data from our servers.
+                                          </SheetDescription>
+                                        </SheetHeader>
+                                      </SheetContent>
+                                    </Sheet>
+                                  </ResizablePanel>
+                                </ResizablePanelGroup>       
+                              </ResizablePanel>
+                              <ResizableHandle />
+                              <ResizablePanel>
+                                <Sheet>
+                                  <SheetTrigger>
+                                    <div>
+                                      <Button variant="secondary"  className='mt-3 h-6 mr-6'>Edit</Button>
+                                      <Button variant="destructive"  className='mt-3 h-6'>Delete</Button>
+                                    </div>
+                                  </SheetTrigger>
+                                  <SheetContent className=''>
+                                    <SheetHeader>
+                                      <SheetTitle>Are you absolutely sure?</SheetTitle>
+                                      <SheetDescription>
+                                        This action cannot be undone. This will permanently delete your account
+                                        and remove your data from our servers.
+                                      </SheetDescription>
+                                    </SheetHeader>
+                                  </SheetContent>
+                                </Sheet>
+                              </ResizablePanel>
+                            </ResizablePanelGroup>       
+                            
+                          </PopoverContent>
+                        </Popover>
                     </li>
                   );
                 })}

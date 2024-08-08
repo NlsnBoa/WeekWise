@@ -3,7 +3,9 @@ import React from 'react';
 import axios from 'axios';
 import '../Chatbot.css';
 import { Schedule } from './homepage';
-import { motion, Reorder } from 'framer-motion';
+import pen from '../assets/pen.svg';
+import { useDragControls, Reorder } from 'framer-motion';
+import { Button } from './ui/button';
 
 
 const statuses = {
@@ -43,7 +45,84 @@ const deployments = [
     text: 'Item 3',
     href: '#',
     projectName: 'api.protocol.chat',
-    teamName: 'Play Minecraft',
+    teamName: 'Jet Skiing',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 5,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Birthday',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 6,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Site Seeing',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 7,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'dinner',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 8,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Traveling',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 9,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Play Soccer',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 10,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Play Basketball',
+    status: 'error',
+    statusText: 'Failed to deploy 6d ago',
+    description: 'Deploys from GitHub',
+    environment: 'Preview',
+  },
+  {
+    id: 11,
+    text: 'Item 3',
+    href: '#',
+    projectName: 'api.protocol.chat',
+    teamName: 'Play Tennis',
     status: 'error',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
@@ -70,6 +149,7 @@ interface TodoListProps {
 const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
   const [input, setInput] = useState<string>('');
   const [items, setItems] = React.useState(deployments);
+  const controls = useDragControls()
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
@@ -117,26 +197,28 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
   return (
   
     <div className="flex flex-col h-full">
-      <div className="border border-gray-700 bg-black rounded-md px-4 py-5 sm:px-6">
-        <h3 className="text-base font-semibold leading-6 text-gray-200">To Do List</h3>
+      <div className="border border-gray-700 bg-black rounded-md px-4 py-5 sm:px-6 mb-2">
+        <h3 className="text-base font-semibold leading-6 text-gray-200 ">To Do List</h3>
       </div>
   
-      <div className="h-full overflow-auto">
+      <div className="h-full overflow-auto pr-4">
         {/* <ul role="list" className="divide-y divide-white/5"> */}
           <Reorder.Group
             axis="y"
             values={items}
             onReorder={setItems}
-            className="flex flex-col space-y-2 p-4"
+            className="flex flex-col space-y-2"
           >
             {items.map((deployment) => (
               <Reorder.Item 
                 key={deployment.id}
                 value={deployment}
-                className="relative flex items-center space-x-4 py-4"
+                className="relative flex items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700"
                 // className="bg-blue-500 text-white p-4 rounded shadow-md cursor-pointer"
+                // dragListener={false}
+                // dragControls={controls}
               >
-                <div className="min-w-0 flex-auto">
+                <div className="min-w-0 flex-auto cursor-pointer">
                   <div className="flex items-center gap-x-3">
                     <div className={classNames(statuses[deployment.status], 'flex-none rounded-full p-1')}>
                       <div className="h-2 w-2 rounded-full bg-current" />
@@ -166,6 +248,9 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
                 >
                   {deployment.environment}
                 </div>
+                {/* <Button variant="ghost" size="icon">
+                <img src={pen} alt="expand" className='h-5' />
+              </Button> */}
                 {/* <ChevronRightIcon aria-hidden="true" className="h-5 w-5 flex-none text-gray-400" /> */}
               </Reorder.Item>
             ))}
@@ -189,6 +274,7 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
                 strokeLinejoin="round"
               />
             </svg> */}
+
             <span className=" block text-sm font-semibold text-gray-200">Add To Do</span>
           </button>
           </div>
