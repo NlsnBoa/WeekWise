@@ -196,24 +196,24 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
 
   return (
   
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full w-full">
       <div className="border border-gray-700 bg-black rounded-md px-4 py-5 sm:px-6 mb-2">
         <h3 className="text-base font-semibold leading-6 text-gray-200 ">To Do List</h3>
       </div>
   
-      <div className="h-full overflow-auto pr-4">
+      <div className="h-full overflow-auto w-full">
         {/* <ul role="list" className="divide-y divide-white/5"> */}
           <Reorder.Group
             axis="y"
             values={items}
             onReorder={setItems}
-            className="flex flex-col space-y-2"
+            className="flex flex-col space-y-2 w-full"
           >
             {items.map((deployment) => (
               <Reorder.Item 
                 key={deployment.id}
                 value={deployment}
-                className="relative flex items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700"
+                className="relative flex w-full items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700"
                 // className="bg-blue-500 text-white p-4 rounded shadow-md cursor-pointer"
                 // dragListener={false}
                 // dragControls={controls}

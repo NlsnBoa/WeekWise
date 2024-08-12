@@ -105,15 +105,16 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const [currentDayIndex, setCurrentDayIndex] = useState<number>(getDayIndex());
   // State to track whether an item is currently being dragged
   const [isPopoverVisible, setPopoverVisible] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const startPos = useRef({ x: 0, y: 0 });
   const threshold = 5; // Define a threshold for distinguishing drag vs. click
 
   const handleMouseDown = (event) => {
-    if (!isPopoverVisible)
-      setPopoverVisible(false); // Close the popover
+
 
     // Capture the starting position of the mouse
     startPos.current = { x: event.clientX, y: event.clientY };
+    setIsDragging(false); // Reset dragging state
   };
 
   const handleMouseUp = (event) => {
@@ -123,8 +124,10 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
       Math.pow(event.clientY - startPos.current.y, 2)
     );
 
+    
+
     // Check if the movement is within the threshold
-    if (distance < threshold)  {
+    if (distance < threshold) {
       setPopoverVisible((prev) => !prev); // Toggle popover visibility
     }
   };
@@ -152,6 +155,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   }, [])
 
   const handleDrag = useCallback((e, data, block: TimeBlock, index: number) => {
+    setIsDragging(true); // Set dragging state when drag is detected
     
     console.log('data', data)
     // Calculate the relative y difference from the starting point
@@ -203,6 +207,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const handleStop = useCallback((event) => {
     handleMouseUp(event);
     positionRef.current.y = 0; // Reset position reference
+    setIsDragging(false); // Reset dragging state
   }, []);
 
 
@@ -493,7 +498,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 > 
                 </div>
 
-                <div className={`relative mt-px flex col-start-${currentDayIndex} w-full  border-t-2 border-red-500`} 
+                <div className={`relative mt-px flex col-start-${currentDayIndex} w-full z-50 border-t-2 border-red-500`} 
                   style={{ top: `${((1.75/(15 * 60)) * currentTime )}rem` }}
                   // style ={{top: "1.75rem"}}
                 >
@@ -547,38 +552,68 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                       onStop={(e) => handleStop(e)}
                     >
                       <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
-                          <Popover>
+                          <Popover >
                             {/* Conditionally render PopoverTrigger based on dragging state */}
-                            <PopoverTrigger  className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'>
+                            {!isDragging ? ( // Only show the popover trigger if not dragging
+                              <PopoverTrigger className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
 
-                              {/* <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'> */}
-                                <div className='h-full bg-blue-600 w-3'></div>
-                                <a
-                                  href="#"
-                                  className="flex flex-col p-2 justify-start items-start"
-                                  draggable={false}
-                                >   
-                                  <p className="font-semibold text-white ">{block.task}</p>
-                                  <p className="text-blue-200 group-hover:text-blue-100 ">
-                                    { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                      (<>
-                                        <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                        <span>-</span> 
-                                        <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                      </> ) :   
-                                      (<>
-                                        <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                        <span>-</span> 
-                                        <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                      </> )
-                                    }
-                                  </p>
-                                </a> 
-                              {/* </div> */}
-                            </PopoverTrigger>
-                            {/* Conditionally render PopoverContent based on dragging state */
-                              (isPopoverVisible) && (
-                                <PopoverContent className='h-48'  >
+                                {/* <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'> */}
+                                  <div className='h-full bg-blue-600 w-3 opacity-75 '></div>
+                                  <a
+                                    href="#"
+                                    className="flex flex-col p-2 justify-start items-start"
+                                    draggable={false}
+                                  >   
+                                    <p className="font-semibold text-white ">{block.task}</p>
+                                    <p className="text-blue-200 group-hover:text-blue-100 ">
+                                      { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                        (<>
+                                          <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                          <span>-</span> 
+                                          <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                        </> ) :   
+                                        (<>
+                                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                          <span>-</span> 
+                                          <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                        </> )
+                                      }
+                                    </p>
+                                  </a> 
+                                {/* </div> */}
+                              </PopoverTrigger>
+                            ) :
+                              (
+                                <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-red-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
+                                <div className='h-full bg-blue-600 w-3 opacity-75 '></div>
+                                  <a
+                                    href="#"
+                                    className="flex flex-col p-2 justify-start items-start"
+                                    draggable={false}
+                                  >   
+                                    <p className="font-semibold text-white ">{block.task}</p>
+                                    <p className="text-blue-200 group-hover:text-blue-100 ">
+                                      { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                        (<>
+                                          <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                          <span>-</span> 
+                                          <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                        </> ) :   
+                                        (<>
+                                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                          <span>-</span> 
+                                          <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                        </> )
+                                      }
+                                    </p>
+                                  </a> 
+                                </div>
+                              )
+                            }
+
+                            {/* { isPopoverVisible && 
+                              ( */}
+                                <PopoverContent  hideWhenDetached={true} side="right" className='h-48' collisionBoundary={container.current} collisionPadding={5} >
                                   <ResizablePanelGroup direction="vertical">
                                     <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
                                       <ResizablePanelGroup direction="horizontal">
@@ -638,8 +673,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                                   </ResizablePanelGroup>       
                                   
                                 </PopoverContent>
-                              )
-                            }
+                           {/* )} */}
                           </Popover>
                       </li>
                     </Draggable>
