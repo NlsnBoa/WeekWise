@@ -584,7 +584,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                               </PopoverTrigger>
                             ) :
                               (
-                                <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-red-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
+                                <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
                                 <div className='h-full bg-blue-600 w-3 opacity-75 '></div>
                                   <a
                                     href="#"
@@ -622,9 +622,19 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                                           <p draggable={false}>{block.task}</p>
                                           <div className='flex flex-row mt-2'>
                                             <img src={clock} alt="clock" className='h-5' />
-                                            <div className='flex flex-col ml-2'>
-                                              <p draggable={false}>{new Date(block.start).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                                              <p draggable={false}>{new Date(block.end).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                            <div className='flex flex-row ml-2'>
+                                            { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                              (<>
+                                                <p draggable={false}>  {new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                                <p draggable={false}> <span className='text-gray-400 pl-1'>-</span>  {new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                              </> ) :   
+                                              (<>
+                                                <p draggable={false}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                                <p draggable={false}> <span className='text-gray-400 pl-1'>-</span> {new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                              </> )
+                                            }
+
+                                             
                                             </div>
                                           </div>
                                         </div>
