@@ -17,7 +17,7 @@ body {
 /* Custom scrollbar styles */
 .scrollbar {
   scrollbar-width: thin;          /* For Firefox */
-  scrollbar-color: #303030 black; /* Thumb and track color for Firefox */
+  scrollbar-color: #303030 rgba(0,0,0,0); /* Thumb and track color for Firefox */
 }
 
 /* Webkit browsers */

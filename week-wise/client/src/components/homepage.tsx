@@ -16,7 +16,9 @@ import Nav from './nav'
 export interface TimeBlock {
   task: string;
   start: string; // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
+  updatedStart: string; // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
   end: string;   // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
+  updatedEnd: string;   // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
 }
 
 export interface Schedule {
@@ -29,38 +31,52 @@ const initialSchedule: Schedule = {
   blocks: [
     {
       task: "Morning Meeting",
-      start: "2024-10-05T02:00:00-12:00",
-      end: "2024-10-05T03:00:00-12:00"
+      start: "2024-10-05T02:00:00-12:45",
+      updatedStart: "2024-10-05T03:00:00-12:45",
+      end: "2024-10-05T03:00:00-12:45",
+      updatedEnd: "2024-10-05T03:00:00-12:45"
     },
     {
       task: "Project Discussion",
       start: "2024-10-06T04:00:00-13:00",
-      end: "2024-10-06T05:00:00-13:00"
+      end: "2024-10-06T05:00:00-13:00",
+      updatedStart: "2024-10-06T04:00:00-13:00",
+      updatedEnd: "2024-10-06T05:00:00-13:00"
     },
     {
       task: "Code Review",
       start: "2024-10-07T07:00:00-07:00",
-      end: "2024-10-07T08:00:00-07:00"
+      end: "2024-10-07T08:00:00-07:00",
+      updatedStart: "2024-10-07T07:00:00-07:00",
+      updatedEnd: "2024-10-07T08:00:00-07:00"
     },
     {
       task: "Team Sync",
       start: "2024-10-08T09:00:00-07:00",
-      end: "2024-10-08T10:00:00-07:00"
+      end: "2024-10-08T10:00:00-07:00",
+      updatedStart: "2024-10-08T09:00:00-07:00",
+      updatedEnd: "2024-10-08T10:00:00-07:00"
     },
     {
       task: "Weekly Planning",
       start: "2024-10-09T03:00:00-12:00",
-      end: "2024-10-09T04:00:00-12:00"
+      end: "2024-10-09T04:00:00-12:00",
+      updatedStart: "2024-10-09T03:00:00-12:00",
+      updatedEnd: "2024-10-09T04:00:00-12:00"
     },
     {
       task: "Gym Session",
       start: "2024-10-10T03:00:00-22:00",
-      end: "2024-10-10T04:00:00-22:00"
+      end: "2024-10-10T04:00:00-22:00",
+      updatedStart: "2024-10-10T03:00:00-22:00",
+      updatedEnd: "2024-10-10T04:00:00-22:00"
     },
     {
       task: "Church",
       start: "2024-10-11T03:00:00-11:00",
-      end: "2024-10-11T04:00:00-11:00"
+      end: "2024-10-11T04:00:00-11:00",
+      updatedStart: "2024-10-11T03:00:00-11:00",
+      updatedEnd: "2024-10-11T04:00:00-11:00"
     },
   ]
 };
@@ -87,7 +103,7 @@ const homepage = () => {
         <ResizablePanel defaultSize={94}>
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel defaultSize={75} minSize={75} maxSize={75}>
-              <div className="h-full px-6 pb-6">
+              <div className="h-full px-6 pb-6 scrollbar">
                 <Calendar currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
                 {/* <DragCalendar /> */}
               </div>
@@ -96,7 +112,7 @@ const homepage = () => {
             </ResizablePanel>
             {/* <ResizableHandle /> */}
             <ResizablePanel defaultSize={25} minSize={25} maxSize={25}>
-              <div className="flex h-full items-center justify-center p-6">
+              <div className="flex h-full items-center justify-center p-6 scrollbar">
                 {/* <div className="min-h-screen flex items-center justify-center bg-gray-100"> */}
                   <TodoList currentSchedule={currentSchedule} setCurrentSchedule={setCurrentSchedule}/>
                   {/* <TodoList /> */}
