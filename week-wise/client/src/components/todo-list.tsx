@@ -9,14 +9,20 @@ import { Button } from './ui/button';
 
 
 const statuses = {
-  offline: 'text-gray-500 bg-gray-100/10',
-  online: 'text-green-400 bg-green-400/10',
-  error: 'text-rose-400 bg-rose-400/10',
+  weekly: 'text-gray-500 bg-gray-100/10',
+  now: 'text-green-400 bg-green-400/10',
+  later: 'text-rose-400 bg-rose-400/10',
+  laterToday: 'text-yellow-400 bg-blue-400/10',
 }
-const environments = {
-  Preview: 'text-gray-400 bg-gray-400/10 ring-gray-400/20',
-  Production: 'text-indigo-400 bg-indigo-400/10 ring-indigo-400/30',
+
+
+const verbalStatuses = {
+  weekly: 'text-gray-400 bg-gray-400/10 ring-gray-400/20',
+  now: 'text-green-400 bg-green-400/10 ring-green-400/30',
+  later: 'text-rose-400 bg-rose-400/10 ring-rose-400/30',
+  laterToday: 'text-yellow-400 bg-yellow-400/10 ring-yellow-400/30',
 }
+
 const deployments = [
   {
     id: 2,
@@ -24,10 +30,9 @@ const deployments = [
     href: '#',
     projectName: 'mobile-api',
     teamName: 'Running',
-    status: 'online',
+    status: 'now',
     statusText: 'Deployed 3m ago',
     description: 'Deploys from GitHub',
-    environment: 'Production',
   },
   {
     id: 3,
@@ -35,10 +40,9 @@ const deployments = [
     href: '#',
     projectName: 'tailwindcss.com',
     teamName: 'Do homework',
-    status: 'offline',
+    status: 'laterToday',
     statusText: 'Deployed 3h ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 4,
@@ -46,10 +50,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Jet Skiing',
-    status: 'error',
+    status: 'later',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 5,
@@ -57,10 +60,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Birthday',
-    status: 'error',
+    status: 'later',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 6,
@@ -68,10 +70,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Site Seeing',
-    status: 'error',
+    status: 'later',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 7,
@@ -79,10 +80,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'dinner',
-    status: 'error',
+    status: 'later',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 8,
@@ -90,10 +90,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Traveling',
-    status: 'error',
+    status: 'later',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 9,
@@ -101,10 +100,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Play Soccer',
-    status: 'error',
+    status: 'weekly',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 10,
@@ -112,10 +110,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Play Basketball',
-    status: 'error',
+    status: 'weekly',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
   {
     id: 11,
@@ -123,10 +120,9 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Play Tennis',
-    status: 'error',
+    status: '',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
-    environment: 'Preview',
   },
 ]
 
@@ -242,11 +238,11 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
                 </div>
                 <div
                   className={classNames(
-                    environments[deployment.environment],
+                    verbalStatuses[deployment.status],
                     'flex-none rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset',
                   )}
                 >
-                  {deployment.environment}
+                  {deployment.status}
                 </div>
                 {/* <Button variant="ghost" size="icon">
                 <img src={pen} alt="expand" className='h-5' />

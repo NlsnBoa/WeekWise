@@ -15,6 +15,14 @@ import {
 } from "@/components/ui/sheet"
 
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu"
+
+
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -31,6 +39,7 @@ import {
 import clock from '../assets/clock.svg'
 import expand from '../assets/expand.svg'
 import { delay } from 'framer-motion';
+import { Divide } from 'lucide-react';
 
 
 
@@ -105,7 +114,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const [currentDayIndex, setCurrentDayIndex] = useState<number>(getDayIndex());
   // State to track whether an item is currently being dragged
   const [isPopoverVisible, setPopoverVisible] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] = useState(-1); // index of the dragged item or -1 if not dragging
   const startPos = useRef({ x: 0, y: 0 });
   const threshold = 5; // Define a threshold for distinguishing drag vs. click
 
@@ -114,7 +123,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
 
     // Capture the starting position of the mouse
     startPos.current = { x: event.clientX, y: event.clientY };
-    setIsDragging(false); // Reset dragging state
+    setIsDragging(-1); // Reset dragging state
   };
 
   const handleMouseUp = (event) => {
@@ -155,7 +164,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   }, [])
 
   const handleDrag = useCallback((e, data, block: TimeBlock, index: number) => {
-    setIsDragging(true); // Set dragging state when drag is detected
+    setIsDragging(index); // Set dragging state when drag is detected
     
     console.log('data', data)
     // Calculate the relative y difference from the starting point
@@ -207,7 +216,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const handleStop = useCallback((event) => {
     handleMouseUp(event);
     positionRef.current.y = 0; // Reset position reference
-    setIsDragging(false); // Reset dragging state
+    setIsDragging(-1); // Reset dragging state
   }, []);
 
 
@@ -225,6 +234,28 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   }, []);
 
   const weekDates = getWeekDates();
+
+
+    // State to store the mouse position
+    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+    // Event handler to update the mouse position
+    const handleMouseMove = (event) => {
+      setMousePosition({
+        x: event.clientX,
+        y: event.clientY,
+      });
+    };
+  
+    // Add the mousemove event listener
+    useEffect(() => {
+      window.addEventListener("mousemove", handleMouseMove);
+  
+      // Cleanup the event listener on component unmount
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+      };
+    }, []);
 
   return (
     <div className="flex h-full flex-col">
@@ -389,9 +420,9 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
         <div style={{ width: '165%' }} className="flex max-w-full flex-none flex-col sm:max-w-none md:max-w-full">
           <div
             ref={containerNav}
-            className="sticky top-0 z-30 flex-none bg-black border-b-[1px] border-white ring-white ring-opacity-5 sm:pr-8"
+            className="sticky top-0 z-50 flex-none bg-black border-b-[1px] border-white ring-white ring-opacity-5 sm:pr-8 "
           >
-            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-500 border-r border-gray-500 text-sm leading-6 text-white sm:grid">
+            <div className="-mr-px hidden grid-cols-7 divide-x divide-gray-500 border-r border-gray-500 text-sm leading-6  text-white sm:grid">
               <div className="col-end-1 w-14" />
               {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day, index) => (
                 <div key={index} className="flex items-center justify-center py-3">
@@ -414,16 +445,27 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                 style={{ gridTemplateRows: 'repeat(48, minmax(3.5rem, 1fr))' }}
               >
                 <div ref={containerOffset} className="row-end-1 h-7"></div>
-                {[...Array(24).keys()].map((hour) => (
+                {[...Array(24).keys()].map((hour, index) =>{ 
+                  const now = new Date();
+                  const minutes = now.getMinutes(); // 0-59
+                  let hours = now.getHours(); // 0-23
+                  if (minutes > 50) {
+                    hours += 1; 
+                  } 
+                  if (minutes > 15) {
+                    hours = -1;
+                  }
+
+                  return (
                   <Fragment key={`frag-${hour}`}>
                     <div key={`time-${hour}`}>
                       <div className="sticky left-0 z-20 -ml-14 -mt-2.5 w-14 pr-2 text-right text-xs leading-5 text-gray-400">
-                        {hour % 12 === 0 ? 12 : hour % 12}{hour < 12 ? 'AM' : 'PM'}
+                        { !(hours == hour) && (hour % 12 === 0 ? 12 : hour % 12)}{ !(hours == hour) &&  (hour < 12 ? 'AM' : 'PM')}
                       </div>
                     </div>
                     <div key={`spacer-${hour}`} />
                   </Fragment>
-                ))}
+                )})}
               </div>
 
               {/* Vertical lines */}
@@ -492,19 +534,28 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
               >
 
                 <div 
-                  className="relative mt-px flex col-start-1 col-end-8 w-full border-t-2 border-red-500 opacity-50"
-                  style={{ top: `${((1.75/(15 * 60)) * currentTime )+ 1.75}rem` }}
+                  className="relative mt-px flex col-start-1 col-end-8 w-full border-t-2 border-red-500 "
+                  style={{ 
+                    top: `${((1.75/(15 * 60)) * currentTime )+ 1.75}rem`,
+                    // backgroundColor: "rgba(255, 0, 0, 0.5)", // Red background with 50% opacity
+                    borderColor: "rgba(255, 0, 0, 0.5)" // Red border with 50% opacity
+                  }}
                   // style ={{top: `${1.70 * 2.45}rem`}}
                 > 
+                  <div className="absolute top-[-1px] left-0 transform -translate-x-full -translate-y-full w-fit h-2.5 pr-1 text-red-500 opacity-100 text-[12px] z-50 rounded-full">
+                    { new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                  </div>
                 </div>
+                
 
-                <div className={`relative mt-px flex col-start-${currentDayIndex} w-full z-50 border-t-2 border-red-500`} 
+                <div className={`relative mt-px flex col-start-${currentDayIndex} w-full  border-t-2 border-red-500  z-10`} 
                   style={{ top: `${((1.75/(15 * 60)) * currentTime )}rem` }}
                   // style ={{top: "1.75rem"}}
                 >
                   <div className="absolute top-[-1px] left-0 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full">
                   </div>
                 </div>
+                
           
 
                 {currentSchedule.blocks.map((block, index) => {
@@ -522,6 +573,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   const duration = (endTime - startTime) * 60 * 0.2;
                   const MondayDate = weekDates[0].getDate();
                   const day = start.getDate() - MondayDate + 1;
+                  const rowHeight = (((endHour * 60) + endMinute) - ((startHour * 60) + startMinute) ) * 1.73;
 
               
                   if (index === currentSchedule.blocks.length - 1) {
@@ -538,27 +590,29 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   } 
                  
                   return (
-                    <Draggable
-                      key={`${block.task}-${index}-${day}`}
-                      axis="y"
-                      onMouseDown={(e) => {
-                        handleMouseDown(e);
-                        e.stopPropagation()
-                      }} 
-                      allowAnyClick={false}
-                      grid={[28, 28]} // Adjust this to set snapping grid size (28 pixels for snappy y-axis dragging)
-                      onStart={(e, data) => handleStart(e, data)}
-                      onDrag={(e, data) => handleDrag(e, data, block, index)}
-                      onStop={(e) => handleStop(e)}
-                    >
-                      <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day}`} style={{ gridRow: `${startRow} / span ${duration}` }}>
+                    <>
+                    
+                      <Draggable
+                        key={`${block.task}-${index}-${day}`}
+                        axis="y"
+                        onMouseDown={(e) => {
+                          handleMouseDown(e);
+                          e.stopPropagation()
+                        }} 
+                        allowAnyClick={false}
+                        grid={[28, 28]} // Adjust this to set snapping grid size (28 pixels for snappy y-axis dragging)
+                        onStart={(e, data) => handleStart(e, data)}
+                        onDrag={(e, data) => handleDrag(e, data, block, index)}
+                        onStop={(e) => handleStop(e)}
+                      >
+                        <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day} z-20`} style={{ gridRow: `${startRow} / span ${duration}` }}>
                           <Popover >
                             {/* Conditionally render PopoverTrigger based on dragging state */}
-                            {!isDragging ? ( // Only show the popover trigger if not dragging
-                              <PopoverTrigger className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
+                            {isDragging != index ? ( // Only show the popover trigger if not dragging
+                              <PopoverTrigger className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg bg-blue-800 opacity-85 text-xs leading-5 hover:bg-blue-900 mr-2'>
 
                                 {/* <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'> */}
-                                  <div className='h-full bg-blue-600 w-3 opacity-75 '></div>
+                                  <div className='h-full bg-blue-600 w-3 opacity-65 '></div>
                                   <a
                                     href="#"
                                     className="flex flex-col p-2 justify-start items-start"
@@ -584,92 +638,73 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                               </PopoverTrigger>
                             ) :
                               (
-                                <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800 opacity-85   text-xs leading-5 hover:bg-blue-900'>
-                                <div className='h-full bg-blue-600 w-3 opacity-75 '></div>
-                                  <a
-                                    href="#"
-                                    className="flex flex-col p-2 justify-start items-start"
-                                    draggable={false}
-                                  >   
-                                    <p className="font-semibold text-white ">{block.task}</p>
-                                    <p className="text-blue-200 group-hover:text-blue-100 ">
-                                      { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                        (<>
-                                          <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                          <span>-</span> 
-                                          <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                        </> ) :   
-                                        (<>
-                                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                          <span>-</span> 
-                                          <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                        </> )
-                                      }
-                                    </p>
-                                  </a> 
-                                </div>
+                                <>   
+                                  {/* <div className='flex flex-row group absolute inset-1 justify-start items-start z-40 overflow-y-auto rounded-lg bg-blue-800 opacity-55 text-xs leading-5 hover:bg-blue-900 -translate-x-[10px] -translate-y-[30px] mr-2'>
+                                    <div className='h-full bg-blue-600 w-3 opacity-55 '></div>
+                                    <a
+                                      href="#"
+                                      className="flex flex-col p-2 justify-start items-start"
+                                      draggable={false}
+                                    >   
+                                      <p className="font-semibold text-white ">{block.task}</p>
+                                      <p className="text-blue-200 group-hover:text-blue-100 ">
+                                        { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                          (<>
+                                            <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                            <span>-</span> 
+                                            <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                          </> ) :   
+                                          (<>
+                                            <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                            <span>-</span> 
+                                            <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                          </> )
+                                        }
+                                      </p>
+                                    </a> 
+                                  </div> */}
+                                
+                                  <div className='flex flex-row group absolute inset-1 justify-start items-start z-10 overflow-y-auto rounded-lg bg-transparent opacity-85 text-xs border-dashed border-white border-2 leading-5 mr-2'>
+                                  </div>
+                                </>
+                                
                               )
                             }
+                            <PopoverContent  hideWhenDetached={true} side="right" className='h-48' collisionBoundary={container.current} collisionPadding={5} >
+                              <ResizablePanelGroup direction="vertical">
+                                <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
+                                  <ResizablePanelGroup direction="horizontal">
+                                    <ResizablePanel defaultSize={84} maxSize={84} minSize={84}>
+                                    <div className='flex flex-col '>
+                                      <p draggable={false}>{block.task}</p>
+                                      <div className='flex flex-row mt-2'>
+                                        <img src={clock} alt="clock" className='h-5' />
+                                        <div className='flex flex-row ml-2'>
+                                        { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                          (<>
+                                            <p draggable={false}>  {new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                            <p draggable={false}> <span className='text-gray-400 pl-1'>-</span>  {new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                          </> ) :   
+                                          (<>
+                                            <p draggable={false}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                            <p draggable={false}> <span className='text-gray-400 pl-1'>-</span> {new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
+                                          </> )
+                                        }
 
-                            {/* { isPopoverVisible && 
-                              ( */}
-                                <PopoverContent  hideWhenDetached={true} side="right" className='h-48' collisionBoundary={container.current} collisionPadding={5} >
-                                  <ResizablePanelGroup direction="vertical">
-                                    <ResizablePanel defaultSize={75} maxSize={75} minSize={75}>
-                                      <ResizablePanelGroup direction="horizontal">
-                                        <ResizablePanel defaultSize={84} maxSize={84} minSize={84}>
-                                        <div className='flex flex-col '>
-                                          <p draggable={false}>{block.task}</p>
-                                          <div className='flex flex-row mt-2'>
-                                            <img src={clock} alt="clock" className='h-5' />
-                                            <div className='flex flex-row ml-2'>
-                                            { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                              (<>
-                                                <p draggable={false}>  {new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                                <p draggable={false}> <span className='text-gray-400 pl-1'>-</span>  {new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                              </> ) :   
-                                              (<>
-                                                <p draggable={false}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                                <p draggable={false}> <span className='text-gray-400 pl-1'>-</span> {new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                              </> )
-                                            }
-
-                                             
-                                            </div>
-                                          </div>
+                                          
                                         </div>
-                                        </ResizablePanel>
-                                        {/* <ResizableHandle  /> */}
-                                        <ResizablePanel>
-                                          <Sheet>
-                                            <SheetTrigger>
-                                              <Button variant="ghost" size="icon">
-                                                <img src={expand} alt="expand" className='h-5' />
-                                              </Button>
-                                            </SheetTrigger>
-                                            <SheetContent>
-                                              <SheetHeader>
-                                                <SheetTitle>Are you absolutely sure?</SheetTitle>
-                                                <SheetDescription>
-                                                  This action cannot be undone. This will permanently delete your account
-                                                  and remove your data from our servers.
-                                                </SheetDescription>
-                                              </SheetHeader>
-                                            </SheetContent>
-                                          </Sheet>
-                                        </ResizablePanel>
-                                      </ResizablePanelGroup>       
+                                      </div>
+                                    </div>
                                     </ResizablePanel>
-                                    <ResizableHandle />
+                                    {/* <ResizableHandle  /> */}
                                     <ResizablePanel>
                                       <Sheet>
                                         <SheetTrigger>
-                                          <div>
-                                            <Button variant="secondary"  className='mt-3 h-6 mr-6'>Edit</Button>
-                                            <Button variant="destructive"  className='mt-3 h-6'>Delete</Button>
-                                          </div>
+                                          <Button variant="ghost" size="icon">
+                                            <img src={expand} alt="expand" className='h-5' />
+                                          </Button>
                                         </SheetTrigger>
-                                        <SheetContent className=''>
+                                        <SheetContent>
                                           <SheetHeader>
                                             <SheetTitle>Are you absolutely sure?</SheetTitle>
                                             <SheetDescription>
@@ -681,12 +716,70 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                                       </Sheet>
                                     </ResizablePanel>
                                   </ResizablePanelGroup>       
-                                  
-                                </PopoverContent>
-                           {/* )} */}
+                                </ResizablePanel>
+                                <ResizableHandle />
+                                <ResizablePanel>
+                                  <Sheet>
+                                    <SheetTrigger>
+                                      <div>
+                                        <Button variant="secondary"  className='mt-3 h-6 mr-6'>Edit</Button>
+                                        <Button variant="destructive"  className='mt-3 h-6'>Delete</Button>
+                                      </div>
+                                    </SheetTrigger>
+                                    <SheetContent className=''>
+                                      <SheetHeader>
+                                        <SheetTitle>Are you absolutely sure?</SheetTitle>
+                                        <SheetDescription>
+                                          This action cannot be undone. This will permanently delete your account
+                                          and remove your data from our servers.
+                                        </SheetDescription>
+                                      </SheetHeader>
+                                    </SheetContent>
+                                  </Sheet>
+                                </ResizablePanel>
+                              </ResizablePanelGroup>       
+                            </PopoverContent>
                           </Popover>
-                      </li>
-                    </Draggable>
+                        </li>
+                      </Draggable>
+                      {
+                        isDragging == index && 
+                        (
+                        <div
+                          className={`fixed flex justify-start items-start bg-blue-800 text-white rounded-lg p-0 pointer-events-none opacity-65 text-xs hover:bg-blue-900 `}
+                          style={{
+                            left: mousePosition.x + "px",
+                            top: mousePosition.y - 20 + "px",
+                            transform: "translate(-50%, -50%)",
+                            height: `${rowHeight}px`,
+                          }}
+
+                        >
+                          <div className='h-full bg-blue-600 w-3 opacity-55'></div>
+                          <a
+                            href="#"
+                            className="flex flex-col p-2 justify-start items-start"
+                            draggable={false}
+                          >   
+                            <p className="font-semibold text-white ">{block.task}</p>
+                            <p className="text-blue-200 group-hover:text-blue-100 ">
+                              { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
+                                (<>
+                                  <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                  <span>-</span> 
+                                  <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                </> ) :   
+                                (<>
+                                  <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                  <span>-</span> 
+                                  <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
+                                </> )
+                              }
+                            </p>
+                          </a> 
+                        </div>)
+                      }
+                    </>
                   );
                 })}
               </ol>

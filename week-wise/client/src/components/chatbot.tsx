@@ -107,7 +107,6 @@ const Chatbot = ({ currentSchedule, setCurrentSchedule } : ChatbotProps ) => {
              :  
              <Button type="submit">Send</Button>
           }
-         
         </div>
       </form>
     </div>

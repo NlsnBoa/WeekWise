@@ -19,6 +19,7 @@ export interface TimeBlock {
   updatedStart: string; // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
   end: string;   // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
   updatedEnd: string;   // ISO 8601 format: "YYYY-MM-DDTHH:MM:SSZ"
+  priority?: number; // 0: low, 1: medium, 2: high
 }
 
 export interface Schedule {
