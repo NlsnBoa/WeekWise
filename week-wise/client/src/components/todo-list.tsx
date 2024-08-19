@@ -2,17 +2,19 @@ import { useState, FormEvent } from 'react';
 import React from 'react';
 import axios from 'axios';
 import '../Chatbot.css';
-import { Schedule } from './homepage';
+import { Schedule, TimeBlock } from './homepage';
 import pen from '../assets/pen.svg';
 import { useDragControls, Reorder } from 'framer-motion';
 import { Button } from './ui/button';
+import { classNames } from '../lib/utils';
+import { profile } from 'console';
 
 
 const statuses = {
-  weekly: 'text-gray-500 bg-gray-100/10',
-  now: 'text-green-400 bg-green-400/10',
-  later: 'text-rose-400 bg-rose-400/10',
-  laterToday: 'text-yellow-400 bg-blue-400/10',
+  low: 'text-gray-500 bg-gray-100/10',
+  medium: 'text-green-400 bg-green-400/10',
+  high: 'text-rose-400 bg-rose-400/10',
+  // next: 'text-yellow-400 bg-blue-400/10',
 }
 
 
@@ -20,7 +22,7 @@ const verbalStatuses = {
   weekly: 'text-gray-400 bg-gray-400/10 ring-gray-400/20',
   now: 'text-green-400 bg-green-400/10 ring-green-400/30',
   later: 'text-rose-400 bg-rose-400/10 ring-rose-400/30',
-  laterToday: 'text-yellow-400 bg-yellow-400/10 ring-yellow-400/30',
+  next: 'text-yellow-400 bg-yellow-400/10 ring-yellow-400/30',
 }
 
 const deployments = [
@@ -30,8 +32,8 @@ const deployments = [
     href: '#',
     projectName: 'mobile-api',
     teamName: 'Running',
-    status: 'now',
-    statusText: 'Deployed 3m ago',
+    // status: 'now',
+    // statusText: 'Deployed 3m ago',
     description: 'Deploys from GitHub',
   },
   {
@@ -40,7 +42,7 @@ const deployments = [
     href: '#',
     projectName: 'tailwindcss.com',
     teamName: 'Do homework',
-    status: 'laterToday',
+    status: 'next',
     statusText: 'Deployed 3h ago',
     description: 'Deploys from GitHub',
   },
@@ -120,15 +122,12 @@ const deployments = [
     href: '#',
     projectName: 'api.protocol.chat',
     teamName: 'Play Tennis',
-    status: '',
+    status: 'weekly',
     statusText: 'Failed to deploy 6d ago',
     description: 'Deploys from GitHub',
   },
 ]
 
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ')
-}
 
 interface Message {
   text: string;
@@ -194,62 +193,92 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
   
     <div className="flex flex-col h-full w-full">
       <div className="border border-gray-700 bg-black rounded-md px-4 py-5 sm:px-6 mb-2">
-        <h3 className="text-base font-semibold leading-6 text-gray-200 ">To Do List</h3>
+        <h3 className="text-base font-semibold leading-6 text-gray-200 ">Weekly To Do List</h3>
       </div>
   
       <div className="h-full overflow-auto w-full">
         {/* <ul role="list" className="divide-y divide-white/5"> */}
           <Reorder.Group
             axis="y"
-            values={items}
-            onReorder={setItems}
+            values={currentSchedule.blocks}
+            onReorder={(newOrder: Array<TimeBlock>) => {
+              let updatedNewOrder: Array<TimeBlock> = newOrder.map((task: TimeBlock, index) => {
+                task.priority = index + 1;
+                return task;
+              })
+
+              setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedNewOrder }))
+            }}
             className="flex flex-col space-y-2 w-full"
           >
-            {items.map((deployment) => (
-              <Reorder.Item 
-                key={deployment.id}
-                value={deployment}
-                className="relative flex w-full items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700"
-                // className="bg-blue-500 text-white p-4 rounded shadow-md cursor-pointer"
-                // dragListener={false}
-                // dragControls={controls}
-              >
-                <div className="min-w-0 flex-auto cursor-pointer">
-                  <div className="flex items-center gap-x-3">
-                    <div className={classNames(statuses[deployment.status], 'flex-none rounded-full p-1')}>
-                      <div className="h-2 w-2 rounded-full bg-current" />
-                    </div>
-                    <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
-                      <a href={deployment.href} className="flex gap-x-2">
-                        <span className="truncate">{deployment.teamName}</span>
-                        {/* <span className="text-gray-400">/</span> */}
-                        {/* <span className="whitespace-nowrap">{deployment.projectName}</span> */}
-                        {/* <span className="absolute inset-0" /> */}
-                      </a>
-                    </h2>
-                  </div>
-                  <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
-                    <p className="truncate">{deployment.description}</p>
-                    <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 flex-none fill-gray-300">
-                      <circle r={1} cx={1} cy={1} />
-                    </svg>
-                    <p className="whitespace-nowrap">{deployment.statusText}</p>
-                  </div>
-                </div>
-                <div
-                  className={classNames(
-                    verbalStatuses[deployment.status],
-                    'flex-none rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset',
-                  )}
+            {currentSchedule.blocks.map((task, index) => { 
+              let start = new Date(task.start);
+              let end = new Date(task.end);
+              let taskDuration = (end.getTime() - start.getTime()) / 1000 / 60;
+              let taskString = ""
+              if (taskDuration % 60 === 0) {
+                taskDuration =  (end.getTime() - start.getTime()) / (1000 * 3600)
+                let hourString = taskDuration > 1 ? "Hours" : "Hour"
+                taskString = taskDuration + " " + hourString 
+              }  else {
+                let hourString = taskDuration > 1 ? "minutes" : "minute"
+                taskString = taskDuration + " " + hourString 
+              }
+
+              // if (task.type === 'event' || task.priority == undefined) return
+              
+              return (
+                <Reorder.Item 
+                  key={task.id}
+                  value={task}
+                  className="relative flex w-full items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700 cursor-pointer"
+                  // className="bg-blue-500 text-white p-4 rounded shadow-md cursor-pointer"
+                  dragListener={task.type === 'task'}
+                  // dragControls={controls}
                 >
-                  {deployment.status}
-                </div>
-                {/* <Button variant="ghost" size="icon">
-                <img src={pen} alt="expand" className='h-5' />
-              </Button> */}
-                {/* <ChevronRightIcon aria-hidden="true" className="h-5 w-5 flex-none text-gray-400" /> */}
-              </Reorder.Item>
-            ))}
+                  <div className="min-w-0 flex-auto cursor-pointer">
+                    <div className="flex items-center gap-x-3">
+                      <div className={classNames(statuses["medium"], 'flex-none rounded-lg p-1')}>
+                        {/* <div className="h-2 w-2 rounded-full bg-current" />
+                         */}
+                         {"Priority " + task.priority }
+                      </div>
+                      <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
+                        <div>
+                          <div className="flex items-center gap-x-2">
+                            {/* <span className="text-gray-400">Task:</span> */}
+                            <span className="truncate">{task.task}</span>
+                          </div>
+                        </div>
+                        <div  className="flex gap-x-2">
+                       
+                        </div>
+                      </h2>
+                    </div>
+                    {/* <div className="mt-3 flex items-center gap-x-2.5 text-xs leading-5 text-gray-400">
+                      <p className="truncate">{"YOOO"}</p>
+                      <svg viewBox="0 0 2 2" className="h-0.5 w-0.5 flex-none fill-gray-300">
+                        <circle r={1} cx={1} cy={1} />
+                      </svg>
+                      <p className="whitespace-nowrap">{"YOOO"}</p>
+                    </div> */}
+                  </div>
+                  <div
+                    className={classNames(
+                      verbalStatuses["weekly"],
+                      'flex-none rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset',
+                    )}
+                  >
+                      <span className="truncate">{taskString}</span>
+                      <span className="absolute inset-0" />
+                  </div>
+                  <Button variant="ghost" size="icon">
+                  <img src={pen} alt="expand" className='h-5' />
+                </Button>
+                  {/* <ChevronRightIcon aria-hidden="true" className="h-5 w-5 flex-none text-gray-400" /> */}
+                </Reorder.Item>
+              )
+            })}
           </Reorder.Group>
           <div className="relative flex items-center space-x-4 py-4">
           <button
