@@ -25,108 +25,29 @@ const verbalStatuses = {
   next: 'text-yellow-400 bg-yellow-400/10 ring-yellow-400/30',
 }
 
-const deployments = [
-  {
-    id: 2,
-    text: 'Item 1',
-    href: '#',
-    projectName: 'mobile-api',
-    teamName: 'Running',
-    // status: 'now',
-    // statusText: 'Deployed 3m ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 3,
-    text: 'Item 2',
-    href: '#',
-    projectName: 'tailwindcss.com',
-    teamName: 'Do homework',
-    status: 'next',
-    statusText: 'Deployed 3h ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 4,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Jet Skiing',
-    status: 'later',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 5,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Birthday',
-    status: 'later',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 6,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Site Seeing',
-    status: 'later',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 7,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'dinner',
-    status: 'later',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 8,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Traveling',
-    status: 'later',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 9,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Play Soccer',
-    status: 'weekly',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 10,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Play Basketball',
-    status: 'weekly',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-  {
-    id: 11,
-    text: 'Item 3',
-    href: '#',
-    projectName: 'api.protocol.chat',
-    teamName: 'Play Tennis',
-    status: 'weekly',
-    statusText: 'Failed to deploy 6d ago',
-    description: 'Deploys from GitHub',
-  },
-]
+export interface Task {
+  id: number;
+  task: string;
+  estimatedTime: number; // in minutes
+  priority: "low" | "medium" | "high";
+}
+
+export interface List {
+  user: string;
+  tasks: Task[];
+}   
+
+const list: List = {
+  user: "user1",
+  tasks: [
+    {
+      id: 1,
+      task: "First TODO",
+      estimatedTime: 60,
+      priority: "high",
+    }
+  ]
+};
 
 
 interface Message {
@@ -143,7 +64,7 @@ interface TodoListProps {
 
 const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
   const [input, setInput] = useState<string>('');
-  const [items, setItems] = React.useState(deployments);
+  const [items, setItems] = React.useState(list);
   const controls = useDragControls()
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
@@ -200,32 +121,30 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
         {/* <ul role="list" className="divide-y divide-white/5"> */}
           <Reorder.Group
             axis="y"
-            values={currentSchedule.blocks}
-            onReorder={(newOrder: Array<TimeBlock>) => {
-              let updatedNewOrder: Array<TimeBlock> = newOrder.map((task: TimeBlock, index) => {
-                task.priority = index + 1;
+            values={items.tasks}
+            onReorder={(newOrder: Array<Task>) => {
+              let updatedNewOrder: Array<Task> = newOrder.map((task: Task, index) => {
                 return task;
               })
 
-              setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedNewOrder }))
+              setItems((prevList) => ({ ...prevList, task: updatedNewOrder }))
             }}
             className="flex flex-col space-y-2 w-full"
           >
-            {currentSchedule.blocks.map((task, index) => { 
-              let start = new Date(task.start);
-              let end = new Date(task.end);
-              let taskDuration = (end.getTime() - start.getTime()) / 1000 / 60;
+            {items.tasks.map((task, index) => { 
+              // let start = new Date(task.start);
+              // let end = new Date(task.end);
+              // let taskDuration = (end.getTime() - start.getTime()) / 1000 / 60;
               let taskString = ""
+              let taskDuration = task.estimatedTime
               if (taskDuration % 60 === 0) {
-                taskDuration =  (end.getTime() - start.getTime()) / (1000 * 3600)
+                taskDuration =  (task.estimatedTime) / 60
                 let hourString = taskDuration > 1 ? "Hours" : "Hour"
                 taskString = taskDuration + " " + hourString 
               }  else {
                 let hourString = taskDuration > 1 ? "minutes" : "minute"
                 taskString = taskDuration + " " + hourString 
               }
-
-              // if (task.type === 'event' || task.priority == undefined) return
               
               return (
                 <Reorder.Item 
@@ -233,7 +152,6 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
                   value={task}
                   className="relative flex w-full items-center space-x-4 py-4 bg-[#181818] rounded-md p-2 border border-gray-700 cursor-pointer"
                   // className="bg-blue-500 text-white p-4 rounded shadow-md cursor-pointer"
-                  dragListener={task.type === 'task'}
                   // dragControls={controls}
                 >
                   <div className="min-w-0 flex-auto cursor-pointer">

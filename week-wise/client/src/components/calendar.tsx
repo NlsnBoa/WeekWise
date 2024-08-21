@@ -4,7 +4,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, EllipsisHorizontalIcon } from '@heroicons/react/20/solid'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
 import { Schedule, TimeBlock } from './homepage';
-import Draggable from 'react-draggable';  // Import Draggable
+import { classNames } from '@/lib/utils';
 import {
   Sheet,
   SheetContent,
@@ -42,7 +42,15 @@ import { delay } from 'framer-motion';
 import { Divide } from 'lucide-react';
 
 
+const calendarType = {
+  event: ' bg-gray-800 hover:bg-gray-900',
+  task: ' bg-blue-800 hover:bg-blue-900 ',
+}
 
+const calendarTypeAccent = {
+  event: ' bg-gray-600 ',
+  task: ' bg-blue-600 ',
+}
 
 // These need to exist for tailwind to add the styles to the build
 // They are not used in the code but are required for the styles to be added
@@ -115,25 +123,30 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   // State to track whether an item is currently being dragged
   const [isPopoverVisible, setPopoverVisible] = useState(false);
   const [isDragging, setIsDragging] = useState(-1); // index of the dragged item or -1 if not dragging
+  const [moving, setMoving] = useState(false);
   const startPos = useRef({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const threshold = 5; // Define a threshold for distinguishing drag vs. click
+  // State to store the mouse position
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  const handleMouseDown = (event) => {
-
-
+  const handleMouseDown = useCallback((event, index: number) => {
+    setIsDragging(index); // Set dragging state when drag is detected
+    console.log("dragging clicked", index)
+    // setMoving(true);
     // Capture the starting position of the mouse
+    positionRef.current = { y: event.clientY, x: event.clientX };
     startPos.current = { x: event.clientX, y: event.clientY };
-    setIsDragging(-1); // Reset dragging state
-  };
+    // setIsDragging(-1); // Reset dragging state
+  }, [isDragging]);
 
   const handleMouseUp = (event) => {
+    // setMoving(false);
     // Calculate the distance moved
     const distance = Math.sqrt(
       Math.pow(event.clientX - startPos.current.x, 2) +
       Math.pow(event.clientY - startPos.current.y, 2)
     );
-
-    
 
     // Check if the movement is within the threshold
     if (distance < threshold) {
@@ -141,15 +154,15 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
     }
   };
 
-  const gridSize = 28; // Define grid size for snapping
+  const gridSize = 52; // Define grid size for snapping
 
   // Store the last position to calculate the relative drag
-  const positionRef = useRef({ y: 0 });
+  const positionRef = useRef({x: 0,  y: 0 });
 
-  const handleStart = useCallback((e, data) => {
+  const handleStart = useCallback((e) => {
     // Set the current position as the starting point
-    positionRef.current = { y: data.y };
-  }, []);
+    positionRef.current = { y: e.clientY, x: e.clientX };
+  }, [positionRef]);
 
   useEffect(() => {
     // Set the container scroll position based on the current time.
@@ -163,61 +176,75 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
 
   }, [])
 
-  const handleDrag = useCallback((e, data, block: TimeBlock, index: number) => {
-    setIsDragging(index); // Set dragging state when drag is detected
-    
-    console.log('data', data)
-    // Calculate the relative y difference from the starting point
-    const deltaY = data.y - positionRef.current.y;
-    console.log('deltaY', deltaY)
+  const handleDrag = useCallback((e, block: TimeBlock, index: number) => {
+    if (isDragging !== -1) {
+      console.log('dragging', isDragging)
+      // setIsDragging(index); // Set dragging state when drag is detected
 
-    // Snap to grid: Calculate how many full grid steps have been dragged
-    const gridSteps = Math.round(deltaY / (gridSize));
+      // console.log('data', data)
+      // Calculate the relative y difference from the starting point
+      const deltaY = e.clientY - positionRef.current.y;
+      console.log('deltaY', deltaY)
 
-    console.log('gridSteps', gridSteps)
-    
+      // Snap to grid: Calculate how many full grid steps have been dragged
+      const gridSteps = Math.round(deltaY / (gridSize));
 
-    // Only update if there's an actual step movement
-    if (gridSteps !== 0) {
-      const draggedMinutes = gridSteps * 15; // 15-minute intervals
-      console.log('draggedMinutes', draggedMinutes)
+      console.log('gridSteps', gridSteps)
+      
 
-      const updatedStart = new Date(block.updatedStart);
-      const updatedEnd = new Date(block.updatedEnd);
+      // Only update if there's an actual step movement
+      if (gridSteps !== 0) {
+        const draggedMinutes = gridSteps * 15; // 15-minute intervals
+        console.log('draggedMinutes', draggedMinutes)
 
-      console.log('updatedStart before', updatedStart)
-      console.log('updatedEnd before', updatedEnd)
+        const updatedStart = new Date(block.start);
+        const updatedEnd = new Date(block.end);
 
-      // Update position accurately
-      updatedStart.setMinutes(updatedStart.getMinutes() + draggedMinutes);
-      updatedEnd.setMinutes(updatedEnd.getMinutes() + draggedMinutes);
-      console.log('updatedStart after', updatedStart)
-      console.log('updatedEnd after', updatedEnd)
+        console.log('updatedStart before', updatedStart)
+        console.log('updatedEnd before', updatedEnd)
 
- 
+        // Update position accurately
+        updatedStart.setMinutes(updatedStart.getMinutes() + draggedMinutes);
+        updatedEnd.setMinutes(updatedEnd.getMinutes() + draggedMinutes);
+        console.log('updatedStart after', updatedStart)
+        console.log('updatedEnd after', updatedEnd)
 
-      // Create new blocks array
-      const updatedBlocks = currentSchedule.blocks.map((b, i) =>
-        i === index ? { ...b, updatedStart: updatedStart.toISOString(), updatedEnd: updatedEnd.toISOString() } : b
-      );
+  
 
-      // setTimeout(() => {  
-      //   setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
-      // }, 1000)
-      // Set the updated schedule
-      setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
+        // Create new blocks array
+        // const updatedBlocks = currentSchedule.blocks.map((b, i) =>
+        //   i === index ? { ...b, start: updatedStart.toISOString(), end: updatedEnd.toISOString() } : b
+        // );
 
-      // Update the reference position
-      positionRef.current.y = data.y;
+        // // setTimeout(() => {  
+        // //   setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
+        // // }, 1000)
+        // // Set the updated schedule
+        // setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
+        setCurrentSchedule((prevSchedule) => {
+          const updatedBlocks = prevSchedule.blocks.map((b, i) =>
+            i === index ? { ...b, start: updatedStart.toISOString(), end: updatedEnd.toISOString() } : b
+          );
+        
+          return { ...prevSchedule, blocks: updatedBlocks };
+        });
+
+        // Update the reference position
+        positionRef.current = { y: e.clientY , x: e.clientX};
+      }
     }
-  }, [gridSize, currentSchedule, setCurrentSchedule]);
+  }, [gridSize, currentSchedule, isDragging, positionRef]);
 
 
-  const handleStop = useCallback((event) => {
-    handleMouseUp(event);
-    positionRef.current.y = 0; // Reset position reference
-    setIsDragging(-1); // Reset dragging state
-  }, []);
+  const handleStop = useCallback((event: any) => {
+    if (isDragging !== -1) {
+      console.log('dragging mouseup detected')
+      handleMouseUp(event);
+      positionRef.current.y = 0; // Reset position reference
+      positionRef.current.x = 0; // Reset position reference
+      setIsDragging(-1); // Reset dragging state
+    }
+  }, [isDragging]);
 
 
   useEffect(() => {
@@ -236,26 +263,30 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const weekDates = getWeekDates();
 
 
-    // State to store the mouse position
-    const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  // Event handler to update the mouse position
+  const handleMouseMove = useCallback((event: any) => {
+    if (isDragging !== -1) {
+      // console.log("dragging", isDragging)
+      handleDrag(event, currentSchedule.blocks[isDragging], isDragging);
+    }
 
-    // Event handler to update the mouse position
-    const handleMouseMove = (event) => {
-      setMousePosition({
-        x: event.clientX,
-        y: event.clientY,
-      });
+    setMousePosition({
+      x: event.clientX,
+      y: event.clientY,
+    });
+  }, [currentSchedule,isDragging]);
+
+  // Add the mousemove event listener
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleStop);
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleStop);
     };
-  
-    // Add the mousemove event listener
-    useEffect(() => {
-      window.addEventListener("mousemove", handleMouseMove);
-  
-      // Cleanup the event listener on component unmount
-      return () => {
-        window.removeEventListener("mousemove", handleMouseMove);
-      };
-    }, []);
+  }, [isDragging, positionRef, currentSchedule]);
 
   return (
     <div className="flex h-full flex-col">
@@ -452,7 +483,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   if (minutes > 50) {
                     hours += 1; 
                   } 
-                  if (minutes > 15) {
+                  if (minutes > 10) {
                     hours = -1;
                   }
 
@@ -552,7 +583,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   style={{ top: `${((1.75/(15 * 60)) * currentTime )}rem` }}
                   // style ={{top: "1.75rem"}}
                 >
-                  <div className="absolute top-[-1px] left-0 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full">
+                  <div className="absolute top-[-1px] left-1 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full">
                   </div>
                 </div>
                 
@@ -569,14 +600,14 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   const startTime = startHour + (startMinute / 60);
                   const endTime = endHour + (endMinute / 60);
 
-                  const startRow = (startTime * 60 * 0.2) + 2;
-                  const duration = (endTime - startTime) * 60 * 0.2;
+                  const startRow = Math.ceil((startTime * 60 * 0.2) + 2);
+                  const duration = Math.ceil((endTime - startTime) * 60 * 0.2)
                   const MondayDate = weekDates[0].getDate();
                   const day = start.getDate() - MondayDate + 1;
                   const rowHeight = (((endHour * 60) + endMinute) - ((startHour * 60) + startMinute) ) * 1.73;
 
               
-                  if (index === currentSchedule.blocks.length - 1) {
+                  if (block.task == "Morning Meeting") {
                     console.log('block', block);
                     console.log('start', start);
                     console.log('end', end);
@@ -592,78 +623,53 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   return (
                     <>
                     
-                      <Draggable
+                      {/* <div
+                        
                         key={`${block.task}-${index}-${day}`}
-                        axis="y"
+                        // axis="y"
                         onMouseDown={(e) => {
+                          handleStart(e)
                           handleMouseDown(e);
                           e.stopPropagation()
                         }} 
-                        allowAnyClick={false}
-                        grid={[28, 28]} // Adjust this to set snapping grid size (28 pixels for snappy y-axis dragging)
-                        onStart={(e, data) => handleStart(e, data)}
-                        onDrag={(e, data) => handleDrag(e, data, block, index)}
-                        onStop={(e) => handleStop(e)}
-                      >
-                        <li key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day} z-20`} style={{ gridRow: `${startRow} / span ${duration}` }}>
+                        // allowAnyClick={false}
+                        // grid={[28, 28]} // Adjust this to set snapping grid size (28 pixels for snappy y-axis dragging)
+                        // onStart={(e, data) => handleStart(e, data) }
+                        onMouseMove={(e) => handleDrag(e, block, index)}
+                        onMouseLeave={(e) => handleStop(e)}
+                      > */}
+                        <li 
+                            onMouseDown={(e) => {
+                              handleStart(e)
+                              handleMouseDown(e, index);
+                              // e.stopPropagation()
+                            }} 
+                            // onDragStart={(e) => handleStart(e) }
+                            // onMouseMove={(e) => handleDrag(e, block, index)}
+                            // onMouseUp={(e) => handleStop(e)}
+                            key={`${block.task}-${index}-${day}`} className={`relative mt-px flex sm:col-start-${day} z-20`} style={{ gridRow: `${startRow} / span ${duration}` }}
+                          >
                           <Popover >
                             {/* Conditionally render PopoverTrigger based on dragging state */}
                             {isDragging != index ? ( // Only show the popover trigger if not dragging
                               <PopoverTrigger className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg bg-blue-800 opacity-85 text-xs leading-5 hover:bg-blue-900 mr-2'>
-
-                                {/* <div className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg  bg-blue-800  text-xs leading-5 hover:bg-blue-900'> */}
-                                  <div className='h-full bg-blue-600 w-3 opacity-65 '></div>
-                                  <a
-                                    href="#"
-                                    className="flex flex-col p-2 justify-start items-start"
-                                    draggable={false}
-                                  >   
-                                    <p className="font-semibold text-white ">{block.task}</p>
-                                    <p className="text-blue-200 group-hover:text-blue-100 ">
-                                      { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                        (<>
-                                          <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                          <span>-</span> 
-                                          <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                        </> ) :   
-                                        (<>
-                                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                          <span>-</span> 
-                                          <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                        </> )
-                                      }
-                                    </p>
-                                  </a> 
-                                {/* </div> */}
+                                <div className={ 'h-full w-3 opacity-65 bg-blue-600'}></div>
+                                <a
+                                  href="#"
+                                  className="flex flex-col p-2 justify-start items-start"
+                                  draggable={false}
+                                >   
+                                  <p className="font-semibold text-white ">{block.task}</p>
+                                  <p className="text-blue-200 group-hover:text-blue-100 ">
+                                      <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                        <span>-</span> 
+                                      <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>  
+                                  </p>
+                                </a> 
                               </PopoverTrigger>
                             ) :
                               (
                                 <>   
-                                  {/* <div className='flex flex-row group absolute inset-1 justify-start items-start z-40 overflow-y-auto rounded-lg bg-blue-800 opacity-55 text-xs leading-5 hover:bg-blue-900 -translate-x-[10px] -translate-y-[30px] mr-2'>
-                                    <div className='h-full bg-blue-600 w-3 opacity-55 '></div>
-                                    <a
-                                      href="#"
-                                      className="flex flex-col p-2 justify-start items-start"
-                                      draggable={false}
-                                    >   
-                                      <p className="font-semibold text-white ">{block.task}</p>
-                                      <p className="text-blue-200 group-hover:text-blue-100 ">
-                                        { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                          (<>
-                                            <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                            <span>-</span> 
-                                            <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                          </> ) :   
-                                          (<>
-                                            <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                            <span>-</span> 
-                                            <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                          </> )
-                                        }
-                                      </p>
-                                    </a> 
-                                  </div> */}
-                                
                                   <div className='flex flex-row group absolute inset-1 justify-start items-start z-10 overflow-y-auto rounded-lg bg-transparent opacity-85 text-xs border-dashed border-white border-2 leading-5 mr-2'>
                                   </div>
                                 </>
@@ -680,18 +686,9 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                                       <div className='flex flex-row mt-2'>
                                         <img src={clock} alt="clock" className='h-5' />
                                         <div className='flex flex-row ml-2'>
-                                        { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                          (<>
-                                            <p draggable={false}>  {new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                            <p draggable={false}> <span className='text-gray-400 pl-1'>-</span>  {new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                          </> ) :   
-                                          (<>
-                                            <p draggable={false}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                            <p draggable={false}> <span className='text-gray-400 pl-1'>-</span> {new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</p>
-                                          </> )
-                                        }
-
-                                          
+                                          <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                            <span>-</span> 
+                                          <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>       
                                         </div>
                                       </div>
                                     </div>
@@ -741,7 +738,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                             </PopoverContent>
                           </Popover>
                         </li>
-                      </Draggable>
+                      {/* </div> */}
                       {
                         isDragging == index && 
                         (
@@ -763,18 +760,9 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                           >   
                             <p className="font-semibold text-white ">{block.task}</p>
                             <p className="text-blue-200 group-hover:text-blue-100 ">
-                              { (block.updatedStart !== block.start || block.updatedEnd !== block.end) ? 
-                                (<>
-                                  <time dateTime={block.updatedStart}>{new Date(block.updatedStart).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                  <span>-</span> 
-                                  <time dateTime={block.updatedEnd}>{new Date(block.updatedEnd).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                </> ) :   
-                                (<>
-                                  <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
-                                  <span>-</span> 
-                                  <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>
-                                </> )
-                              }
+                              <time dateTime={block.start}>{new Date(block.start).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time> 
+                                <span>-</span> 
+                              <time dateTime={block.end}>{new Date(block.end).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time>  
                             </p>
                           </a> 
                         </div>)

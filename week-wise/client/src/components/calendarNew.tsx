@@ -128,8 +128,6 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
   const threshold = 5; // Define a threshold for distinguishing drag vs. click
 
   const handleMouseDown = (event) => {
-
-
     // Capture the starting position of the mouse
     startPos.current = { x: event.clientX, y: event.clientY };
     setIsDragging(-1); // Reset dragging state
@@ -222,10 +220,9 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
   }, [gridSize, currentSchedule, setCurrentSchedule]);
 
 
-  const handleStop = useCallback((event, block, index: number) => {
+  const handleStop = useCallback((event) => {
     handleMouseUp(event);
     positionRef.current.y = 0; // Reset position reference
-    
     setIsDragging(-1); // Reset dragging state
   }, []);
 
@@ -543,7 +540,7 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                 // className="relative h-full w-full"
               >
 
-                <div 
+                {/* <div 
                   className="relative mt-px flex col-start-1 col-end-8 w-full border-t-2 border-red-500 "
                   style={{ 
                     top: `${((1.75/(15 * 60)) * currentTime )+ 1.75 - 7}rem`,
@@ -564,12 +561,11 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                 >
                   <div className="absolute top-[-1px] left-0 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-red-500 rounded-full">
                   </div>
-                </div>
+                </div> */}
                 
           
 
                 {currentSchedule.blocks.map((block, index) => {
-                  let disable = (block.type ===  "event") ? true : false
 
                   const start = new Date(block.start);
                   const end = new Date(block.end);
@@ -588,10 +584,10 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                   const day = start.getDate() - MondayDate + 1;
                   const rowHeight = (((endHour * 60) + endMinute) - ((startHour * 60) + startMinute)) * 1.73;
 
-                  const startTop = ((((startHour * 60) + startMinute) / 15) * 28) + 28; // Convert to pixels (1.75px per minute)
+                  const startTop = ((((startHour * 60) + startMinute) / 15) * 28) + 28; // Convert to pixels (1.75px per 15 minute)
+                  //28px = 15min = 1.75rem
                   const durationHeight = Math.ceil(((((endHour * 60) + endMinute) - ((startHour * 60) + startMinute)) * 0.2) - (10 * 0.2)); // Duration in pixels
 
-                  //28px = 15min = 1.75rem
 
               
                   if (index === currentSchedule.blocks.length - 1) {
@@ -622,9 +618,8 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                         grid={[28, 28]} // Adjust this to set snapping grid size (28 pixels for snappy y-axis dragging)
                         onStart={(e, data) => handleStart(e, data)}
                         onDrag={(e, data) => handleDrag(e, data, block, index)}
-                        onStop={(e) => handleStop(e, block, index)}
+                        onStop={(e) => handleStop(e)}
                         defaultPosition={{ x: 0, y: startTop  }}
-                        disabled={disable}
                       >
                         <li key={`${block.task}-${block.id}`} 
                           className={`relative mt-px flex col-start-${day} z-20`} 
@@ -634,8 +629,8 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                           <Popover >
                             {/* Conditionally render PopoverTrigger based on dragging state */}
                             {isDragging != index ? ( // Only show the popover trigger if not dragging
-                              <PopoverTrigger className={classNames(calendarType[block.type], 'flex flex-row group absolute inset-1 justify-start items-start overflow-hidden rounded-lg  opacity-85 text-xs leading-5  mr-2')}>
-                                <div className={classNames(calendarTypeAccent[block.type], 'h-full w-3 opacity-65 ')}></div>
+                              <PopoverTrigger className={ 'flex flex-row group absolute inset-1 justify-start bg-blue-800 hover:bg-blue-900 items-start overflow-hidden rounded-lg  opacity-85 text-xs leading-5  mr-2'}>
+                                <div className={ 'h-full w-3 opacity-65 bg-blue-600'}></div>
                                 <a
                                   href="#"
                                   className="flex flex-col p-2 justify-start items-start"
@@ -722,6 +717,8 @@ const CalendarNew = ({ currentSchedule, setCurrentSchedule } : CalendarProps) =>
                           </Popover>
                         </li>
                       </Draggable>
+
+                      {/* Little visual to show the user is dragging */}
                       {
                         isDragging == index && 
                         (
