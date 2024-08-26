@@ -120,40 +120,18 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const containerOffset = useRef<HTMLDivElement>(null)
   const [currentTime, setCurrentTime] = useState<number>(getCurrentTime());
   const [currentDayIndex, setCurrentDayIndex] = useState<number>(getDayIndex());
-  // State to track whether an item is currently being dragged
-  const [isPopoverVisible, setPopoverVisible] = useState(false);
-  const [isDragging, setIsDragging] = useState(-1); // index of the dragged item or -1 if not dragging
-  const [moving, setMoving] = useState(false);
-  const startPos = useRef({ x: 0, y: 0 });
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const threshold = 5; // Define a threshold for distinguishing drag vs. click
-  // State to store the mouse position
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(-1); // index of the dragged item or -1 if not dragging
+  const [moving, setMoving] = useState(false) // Flag to tell other components that the mouse is moving
 
   const handleMouseDown = useCallback((event, index: number) => {
     setMoving(false);
     setIsDragging(index); // Set dragging state when drag is detected
     console.log("dragging clicked", index)
-    // setMoving(true);
+
     // Capture the starting position of the mouse
     positionRef.current = { y: event.clientY, x: event.clientX };
-    startPos.current = { x: event.clientX, y: event.clientY };
-    // setIsDragging(-1); // Reset dragging state
   }, [isDragging]);
-
-  const handleMouseUp = (event) => {
-    setMoving(false);
-    // Calculate the distance moved
-    const distance = Math.sqrt(
-      Math.pow(event.clientX - startPos.current.x, 2) +
-      Math.pow(event.clientY - startPos.current.y, 2)
-    );
-
-    // Check if the movement is within the threshold
-    if (distance < threshold) {
-      setPopoverVisible((prev) => !prev); // Toggle popover visibility
-    }
-  };
 
   const gridSize = 52; // Define grid size for snapping
 
@@ -180,9 +158,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const handleDrag = useCallback((e, block: TimeBlock, index: number) => {
     if (isDragging !== -1) {
       console.log('dragging', isDragging)
-      // setIsDragging(index); // Set dragging state when drag is detected
 
-      // console.log('data', data)
       // Calculate the relative y difference from the starting point
       const deltaY = e.clientY - positionRef.current.y;
       console.log('deltaY', deltaY)
@@ -228,7 +204,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const handleStop = useCallback((event: any) => {
     if (isDragging !== -1) {
       console.log('dragging mouseup detected')
-      handleMouseUp(event);
+      setMoving(false);
       positionRef.current.y = 0; // Reset position reference
       positionRef.current.x = 0; // Reset position reference
       setIsDragging(-1); // Reset dragging state
@@ -563,7 +539,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                   }}
                   // style ={{top: `${1.70 * 2.45}rem`}}
                 > 
-                  <div className="absolute top-[-1px] left-0 transform -translate-x-full -translate-y-full w-fit h-2.5 pr-1 text-red-500 opacity-100 text-[12px] z-50 rounded-full">
+                  <div className="absolute top-[-1px] left-0 transform -translate-x-full -translate-y-full w-fit h-2.5 pr-1 text-red-500 opacity-100 text-[12px] z-10 rounded-full">
                     { new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                   </div>
                 </div>
