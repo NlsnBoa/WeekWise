@@ -8,7 +8,15 @@ import { useDragControls, Reorder } from 'framer-motion';
 import { Button } from './ui/button';
 import { classNames } from '../lib/utils';
 import { profile } from 'console';
-
+import AddToDo from './add-todo';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
 
 const statuses = {
   low: 'text-gray-500 bg-gray-100/10',
@@ -42,7 +50,7 @@ const list: List = {
   tasks: [
     {
       id: 1,
-      task: "First TODO",
+      task: "Start Homework",
       estimatedTime: 60,
       priority: "high",
     }
@@ -156,16 +164,15 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
                 >
                   <div className="min-w-0 flex-auto cursor-pointer">
                     <div className="flex items-center gap-x-3">
-                      <div className={classNames(statuses["medium"], 'flex-none rounded-lg p-1')}>
-                        {/* <div className="h-2 w-2 rounded-full bg-current" />
-                         */}
-                         {"Priority " + task.priority }
-                      </div>
+                   
                       <h2 className="min-w-0 text-sm font-semibold leading-6 text-white">
                         <div>
                           <div className="flex items-center gap-x-2">
                             {/* <span className="text-gray-400">Task:</span> */}
                             <span className="truncate">{task.task}</span>
+                              <div className={classNames(statuses["medium"], 'flex-none rounded-lg p-1')}>
+                               <div className="h-2 w-2 rounded-full bg-current" />
+                          </div>
                           </div>
                         </div>
                         <div  className="flex gap-x-2">
@@ -199,27 +206,28 @@ const TodoList = ({ currentSchedule, setCurrentSchedule } : TodoListProps ) => {
             })}
           </Reorder.Group>
           <div className="relative flex items-center space-x-4 py-4">
-          <button
-            type="button"
-            className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-5 text-center hover:border-gray-400 focus:outline-none"
-          >
-            {/* <svg
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 48 48"
-              aria-hidden="true"
-              className="mx-auto h-12 w-12 text-gray-400"
-            >
-              <path
-                d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
-                strokeWidth={2}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg> */}
+       
 
-            <span className=" block text-sm font-semibold text-gray-200">Add To Do</span>
-          </button>
+            {/* <Sheet>
+              <SheetTrigger className='w-full'>
+                <button
+                  type="button"
+                  className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-5 text-center hover:border-gray-400 focus:outline-none"
+                >
+                  <span className=" block text-sm font-semibold text-gray-200">Add To Do</span>
+                </button>
+              </SheetTrigger>
+
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>To Do</SheetTitle>
+                  <SheetDescription>
+
+                  </SheetDescription>
+                </SheetHeader>
+              </SheetContent>
+            </Sheet> */}
+            <AddToDo></AddToDo>
           </div>
         {/* </ul> */}
       </div>
