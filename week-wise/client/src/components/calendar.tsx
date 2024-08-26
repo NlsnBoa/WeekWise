@@ -131,6 +131,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   const handleMouseDown = useCallback((event, index: number) => {
+    setMoving(false);
     setIsDragging(index); // Set dragging state when drag is detected
     console.log("dragging clicked", index)
     // setMoving(true);
@@ -141,7 +142,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   }, [isDragging]);
 
   const handleMouseUp = (event) => {
-    // setMoving(false);
+    setMoving(false);
     // Calculate the distance moved
     const distance = Math.sqrt(
       Math.pow(event.clientX - startPos.current.x, 2) +
@@ -209,18 +210,6 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
         console.log('updatedStart after', updatedStart)
         console.log('updatedEnd after', updatedEnd)
 
-  
-
-        // Create new blocks array
-        // const updatedBlocks = currentSchedule.blocks.map((b, i) =>
-        //   i === index ? { ...b, start: updatedStart.toISOString(), end: updatedEnd.toISOString() } : b
-        // );
-
-        // // setTimeout(() => {  
-        // //   setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
-        // // }, 1000)
-        // // Set the updated schedule
-        // setCurrentSchedule((prevSchedule) => ({ ...prevSchedule, blocks: updatedBlocks }));
         setCurrentSchedule((prevSchedule) => {
           const updatedBlocks = prevSchedule.blocks.map((b, i) =>
             i === index ? { ...b, start: updatedStart.toISOString(), end: updatedEnd.toISOString() } : b
@@ -266,6 +255,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
   // Event handler to update the mouse position
   const handleMouseMove = useCallback((event: any) => {
     if (isDragging !== -1) {
+      setMoving(true);
       // console.log("dragging", isDragging)
       handleDrag(event, currentSchedule.blocks[isDragging], isDragging);
     }
@@ -651,7 +641,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                           >
                           <Popover >
                             {/* Conditionally render PopoverTrigger based on dragging state */}
-                            {isDragging != index ? ( // Only show the popover trigger if not dragging
+                            {(isDragging != index || !moving) ? ( // Only show the popover trigger if not dragging
                               <PopoverTrigger className='flex flex-row group absolute inset-1 justify-start items-start overflow-y-auto rounded-lg bg-blue-800 opacity-85 text-xs leading-5 hover:bg-blue-900 mr-2'>
                                 <div className={ 'h-full w-3 opacity-65 bg-blue-600'}></div>
                                 <a
@@ -740,7 +730,7 @@ const Calendar = ({ currentSchedule, setCurrentSchedule } : CalendarProps) => {
                         </li>
                       {/* </div> */}
                       {
-                        isDragging == index && 
+                        (isDragging == index && moving) && 
                         (
                         <div
                           className={`fixed flex justify-start items-start bg-blue-800 text-white rounded-lg p-0 pointer-events-none opacity-65 text-xs hover:bg-blue-900 `}
